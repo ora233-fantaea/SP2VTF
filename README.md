@@ -69,8 +69,8 @@
 
 ### 运行源码
 ```bash
-git clone [https://github.com/你的用户名/你的仓库名.git](https://github.com/你的用户名/你的仓库名.git)
-cd 你的仓库名
+git clone [https://github.com/ora233-fantaea/SP2VTF.git](https://github.com/ora233-fantaea/SP2VTF.git)
+cd SP2VTF
 python sp_to_vtf.py
 ````
 
