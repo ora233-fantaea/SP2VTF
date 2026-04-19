@@ -1,0 +1,12 @@
+# 编辑器与AI辅助工具配置
+.claude/
+
+# PyInstaller 编译生成目录与文件
+build/
+dist/
+*.spec
+
+# Python 缓存文件 (预防性添加)
+__pycache__/
+*.py[cod]
+*$py.class
