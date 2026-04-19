@@ -1,19 +1,3 @@
-这份原版的 `README.md` 已经写得非常详尽了，特别是“文件名约定”和“参数说明”部分非常清晰专业。
-
-结合我们之前确定的 **GPLv3 协议**、**零第三方库依赖 (Zero-dependency)** 以及面向 GitHub 的排版规范，我为你重新梳理并优化了这份文档。
-
-优化重点如下：
-
-1.  **增加了徽章 (Badges)**：提升开源项目的专业感。
-2.  **重构了文档结构**：将受众明确划分为“普通用户”和“开发者”，让想直接用的玩家和想看代码的程序员都能立刻找到对应部分。
-3.  **补充了协议声明**：在文末加上了刚才确定的 GPLv3 声明。
-4.  **视觉优化**：增加了适当的 Emoji 作为视觉锚点，提升阅读体验。
-
-你可以直接复制以下完整内容，覆盖掉你本地的 `README.md` 文件：
-
------
-
-````markdown
 # SP2VTF - 贴图转换工具
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -140,5 +124,3 @@ pyinstaller --noconfirm --onefile --windowed --name "SP2VTF" sp_to_vtf.py
 本项目采用 [GPL-3.0 License](https://www.google.com/search?q=LICENSE) 协议开源。
 允许任何个人或组织自由使用、修改和分发本项目的代码。如若衍生项目包含了本项目的代码，衍生项目同样必须以 GPLv3 协议开源。
 
-```
-```
