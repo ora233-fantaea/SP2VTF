@@ -4,6 +4,8 @@
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
 [![Zero Dependency](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)](https://github.com/)
 
+该项目使用Claude Code+Claude Opus 4.7编写
+
 一个专为 Source 引擎（如《求生之路2》）模组开发者设计的图形化辅助工具。
 本工具可将 Substance Painter (SP) 导出的 PNG 贴图批量转换为 VTF 格式，并根据 VMT 文件所指向的路径，自动覆盖至目标 `materials` 目录中。采用纯 Python 标准库结合 Tkinter 开发，**无需安装任何第三方 Python 依赖**。
 
