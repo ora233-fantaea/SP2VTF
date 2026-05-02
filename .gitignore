@@ -5,7 +5,7 @@
 build/
 dist/
 *.spec
-
+sp_to_vtf copy.py
 # Python 缓存文件 (预防性添加)
 __pycache__/
 *.py[cod]

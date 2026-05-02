@@ -2,12 +2,14 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
-[![Zero Dependency](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)](https://github.com/)
+[![PySide6](https://img.shields.io/badge/PySide6-6.x-brightgreen)](https://pypi.org/project/PySide6/)
+
+该项目使用 Opencode + DeepSeek V4 Pro & GLM-5.1 ，部分使用Claude Code+Opus 4.7编写
 
 该项目使用Claude Code+Claude Opus 4.7编写
 
 一个专为 Source 引擎（如《求生之路2》）模组开发者设计的图形化辅助工具。
-本工具可将 Substance Painter (SP) 导出的 PNG 贴图批量转换为 VTF 格式，并根据 VMT 文件所指向的路径，自动覆盖至目标 `materials` 目录中。采用纯 Python 标准库结合 Tkinter 开发，**无需安装任何第三方 Python 依赖**。
+本工具可将 Substance Painter (SP) 导出的 PNG 贴图批量转换为 VTF 格式，并根据 VMT 文件所指向的路径，自动覆盖至目标 `materials` 目录中。采用 PySide6 (Qt for Python) 结合 Material Design 3 风格开发，提供现代化的原生 GUI 体验。
 
 ## ✨ 核心特性
 
@@ -62,10 +64,9 @@
 
 ## 💻 本地开发与构建 (开发者)
 
-本项目秉承 **零第三方依赖 (Zero-dependency)** 原则，克隆即跑。
-
 ### 环境准备
 - Python 3.8 或更高版本。
+- PySide6：`pip install PySide6`
 - [VTFCmd.exe](https://nemstools.github.io/pages/VTFLib-Download.html)
 
 ### 运行源码
@@ -81,7 +82,7 @@ python sp_to_vtf.py
 
 ```bash
 pip install pyinstaller
-pyinstaller --noconfirm --onefile --windowed --name "SP2VTF" sp_to_vtf.py
+pyinstaller --noconfirm --onefile --windowed --hidden-import PySide6 --name "SP2VTF" sp_to_vtf.py
 ```
 
 编译产物将生成在 `dist/` 目录下。
@@ -124,4 +125,3 @@ pyinstaller --noconfirm --onefile --windowed --name "SP2VTF" sp_to_vtf.py
 
 本项目采用 [GPL-3.0 License](https://www.google.com/search?q=LICENSE) 协议开源。
 允许任何个人或组织自由使用、修改和分发本项目的代码。如若衍生项目包含了本项目的代码，衍生项目同样必须以 GPLv3 协议开源。
-

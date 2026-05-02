@@ -1,8 +1,8 @@
 {
-  "vtfcmd": "path\\VTFCmd_BatchScript-Generator_v2.1\\bin\\VTFCmd.exe",
-  "png_dir": "\\path\\Adobe Substance 3D Painter Export\\mk17-1",
-  "vmt_dir": "\\path\\eft fn scar-h（replace ak-47）1\\materials\\escape\\from\\tarkov\\mk17",
-  "materials_dir": "\\path\\eft fn scar-h（replace ak-47）1\\materials",
+  "vtfcmd": "E:\\VTFCmd_BatchScript-Generator_v2.1\\bin\\VTFCmd.exe",
+  "png_dir": "E:\\making-gunmod\\Adobe Substance 3D Painter Export\\strider 300",
+  "vmt_dir": "E:\\making-gunmod\\strider300原皮 （非消音）备份\\materials\\cod\\weapons",
+  "materials_dir": "E:\\making-gunmod\\strider300原皮 （非消音）备份\\materials",
   "size_enabled": true,
   "resize_enabled": true,
   "resize_width": 2048,
