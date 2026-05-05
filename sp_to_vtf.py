@@ -1474,12 +1474,16 @@ class MainWindow(QMainWindow):
                 continue
 
             try:
-                if target.exists():
-                    target.unlink()
-                shutil.move(str(generated), str(target))
+                # 先拷贝到目标目录（避免跨盘 move 失败导致旧文件已被删除）
+                tmp = target.with_suffix(target.suffix + ".tmp")
+                shutil.copy2(str(generated), str(tmp))
+                # 目标目录内的重命名是同盘的原子操作
+                tmp.replace(target)
+                self._cleanup_generated(generated)
             except OSError as e:
                 self._signals.log_msg.emit(f"    [失败] 移动 VTF 失败: {e}")
                 self._cleanup_generated(generated)
+                self._cleanup_generated(tmp)
                 fail += 1
                 continue
 
