@@ -6,6 +6,7 @@
 
 该项目使用 Opencode + DeepSeek V4 Pro & GLM-5.1 ，部分使用Claude Code+Opus 4.7编写
 
+
 一个专为 Source 引擎（如《求生之路2》）模组开发者设计的图形化辅助工具。
 本工具可将 Substance Painter (SP) 导出的 PNG 贴图批量转换为 VTF 格式，并根据 VMT 文件所指向的路径，自动覆盖至目标 `materials` 目录中。采用 PySide6 (Qt for Python) 结合 Material Design 3 风格开发，提供现代化的原生 GUI 体验。
 
