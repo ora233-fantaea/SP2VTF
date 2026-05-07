@@ -3,6 +3,8 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python Version](https://img.shields.io/badge/python-3.10-blue)](https://www.python.org/)
 [![PySide6](https://img.shields.io/badge/PySide6-6.x-brightgreen)](https://pypi.org/project/PySide6/)
+[![Pillow](https://img.shields.io/badge/Pillow-latest-blue)](https://pypi.org/project/Pillow/)
+[![NumPy](https://img.shields.io/badge/NumPy-latest-blue)](https://pypi.org/project/numpy/)
 
 本项目使用 Opencode + DeepSeek V4 Pro 编写
 
