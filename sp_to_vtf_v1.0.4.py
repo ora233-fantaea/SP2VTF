@@ -17,7 +17,7 @@ from PIL import Image
 
 # ── PySide6 ────────────────────────────────────────────────────────
 from PySide6.QtCore import Qt, QTimer, Signal, QObject, QPoint, QRectF
-from PySide6.QtGui import QFont, QColor, QTextCharFormat, QTextCursor, QPainter, QPen, QPainterPath
+from PySide6.QtGui import QFont, QColor, QTextCharFormat, QTextCursor, QPainter, QPen, QPainterPath, QIcon
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -912,8 +912,10 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("SP 贴图转 VTF 工具 made by 一个橘色的橙子")
+        self.setWindowTitle("SP 贴图转 VTF 工具 - made by 一个橘色的橙子")
         self.setFixedSize(1304, 852)
+
+        self.setWindowIcon(QIcon(str(Path(__file__).parent / "tape-x64.png")))
 
         self._signals = _Signals()
         self._signals.finished.connect(self._on_convert_finished)
