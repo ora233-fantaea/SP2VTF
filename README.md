@@ -11,7 +11,7 @@
 
 ## 核心特性
 
-- **智能解析路径：** 自动解析 VMT 文件，根据 `$basetexture` / `$bumpmap` / `$phongexponenttexture` / `$envmapmask` 寻找对应的 PNG/TGA 贴图并就地替换。
+- **智能解析路径：** 自动解析 VMT 文件，根据 `$basetexture` / `$bumpmap` 寻找对应的 PNG/TGA 贴图并就地替换。
 - **预处理功能（v1.0.3+）：** 内置 Alpha 通道生成（RGB → Gamma 2.2 灰度），支持输出黑白场裁切（Levels），一键生成夜光/透明度贴图。
 - **丰富的导出选项：** 可自定义 VTF 版本（7.0 ~ 7.5）及 Color / Alpha 通道格式（多达 26 种）。
 - **灵活的尺寸控制：** 支持全局分辨率缩放（128 ~ 4096），也支持在列表中双击单独修改某张贴图的目标尺寸；提供 3 种 Resize Method 和 14 种 Filter 算法。
@@ -29,16 +29,12 @@
 | :--- | :--- |
 | `_Base_Color` | `$basetexture` |
 | `_Normal_OpenGL` | `$bumpmap` |
-| `_Roughness` | `$phongexponenttexture` |
-| `_Metallic` | `$envmapmask` |
 
 > **示例说明：**
 > 假设你的 VMT 文件名为 `reciever_mk17_fn_scar_h_std_LOD0f.vmt`
 > 那么对应的贴图应命名为：
 > - `reciever_mk17_fn_scar_h_std_LOD0f_Base_Color.png`
 > - `reciever_mk17_fn_scar_h_std_LOD0f_Normal_OpenGL.png`
-> - `reciever_mk17_fn_scar_h_std_LOD0f_Roughness.png`
-> - `reciever_mk17_fn_scar_h_std_LOD0f_Metallic.png`
 
 ---
 
@@ -140,7 +136,6 @@ pyinstaller SP2VTF_v1.0.4.spec
 ### v1.0.3
 - 新增预处理对话框（Alpha 通道生成 + 黑白场裁切）
 - 支持 TGA 格式输入
-- 新增 Roughness / Metallic 贴图映射
 - 修复同目录 PNG/VTF 转换安全性问题
 
 ### v1.0.2
