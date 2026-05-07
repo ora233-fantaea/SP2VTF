@@ -391,7 +391,6 @@ class PreprocessDialog(QDialog):
 
     def __init__(self, parent, config_base, config_normal):
         super().__init__(parent)
-        self.winId()  # 强制创建原生窗口句柄（防止 QComboBox 弹窗飘浮）
         self.setWindowTitle("预处理设置 — [base]")
         self.setModal(True)
         self.resize(380, 340)
@@ -400,6 +399,7 @@ class PreprocessDialog(QDialog):
         self._config = {"base": dict(config_base), "normal": dict(config_normal)}
         self._current_slot = "base"
         self._widgets: dict[str, dict] = {}
+        self._show_initialized = False
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(14, 14, 14, 14)
@@ -418,29 +418,21 @@ class PreprocessDialog(QDialog):
         slot_row.addStretch()
         layout.addLayout(slot_row)
 
-        # Alpha 通道开关
+        # 创建所有控件（仅创建，不设值）
         for slot in ("base", "normal"):
             alpha_cb = QCheckBox("生成 Alpha 通道")
-            alpha_cb.setChecked(self._config[slot].get("alpha_enabled", False))
             alpha_cb.toggled.connect(lambda c, s=slot: self._on_alpha_toggled(s))
             src_combo = QComboBox()
             for label, val in self.ALPHA_SOURCES:
                 src_combo.addItem(label, val)
-            src = self._config[slot].get("alpha_source", "gray")
-            idx = src_combo.findData(src)
-            if idx >= 0:
-                src_combo.setCurrentIndex(idx)
             src_label = QLabel("来源")
             levels_cb = QCheckBox("Alpha 色阶")
-            levels_cb.setChecked(self._config[slot].get("levels_enabled", False))
             levels_cb.toggled.connect(lambda c, s=slot: self._on_levels_toggled(s))
             ob_spin = QSpinBox()
             ob_spin.setRange(0, 255)
-            ob_spin.setValue(self._config[slot].get("out_black", 0))
             ob_label = QLabel("输出黑点")
             ow_spin = QSpinBox()
             ow_spin.setRange(0, 255)
-            ow_spin.setValue(self._config[slot].get("out_white", 255))
             ow_label = QLabel("输出白点")
             self._widgets[slot] = {
                 "alpha_cb": alpha_cb, "src_combo": src_combo, "src_label": src_label,
@@ -481,7 +473,30 @@ class PreprocessDialog(QDialog):
         self._src_sub = src_sub
         self._levels_grid = levels_grid
         self._hint2 = hint2
-        self._sync_slot_ui()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if not self._show_initialized:
+            self._show_initialized = True
+            self._apply_config_values()
+            self._sync_slot_ui()
+
+    def _apply_config_values(self):
+        for slot in ("base", "normal"):
+            cfg = self._config[slot]
+            w = self._widgets[slot]
+            w["alpha_cb"].blockSignals(True)
+            w["alpha_cb"].setChecked(cfg.get("alpha_enabled", False))
+            w["alpha_cb"].blockSignals(False)
+            src = cfg.get("alpha_source", "gray")
+            idx = w["src_combo"].findData(src)
+            if idx >= 0:
+                w["src_combo"].setCurrentIndex(idx)
+            w["levels_cb"].blockSignals(True)
+            w["levels_cb"].setChecked(cfg.get("levels_enabled", False))
+            w["levels_cb"].blockSignals(False)
+            w["ob_spin"].setValue(cfg.get("out_black", 0))
+            w["ow_spin"].setValue(cfg.get("out_white", 255))
 
     def _switch_slot(self, slot):
         self._flush_config(self._current_slot)
