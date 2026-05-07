@@ -393,7 +393,7 @@ class PreprocessDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("预处理设置 — [base]")
         self.setModal(True)
-        self.resize(380, 340)
+        self.resize(380, 400)
         self.setMinimumSize(0, 0)
 
         self._config = {"base": dict(config_base), "normal": dict(config_normal)}
@@ -463,6 +463,10 @@ class PreprocessDialog(QDialog):
         hint2 = QLabel("当前默认输出格式为 DXT1 时 Alpha 通道将被丢弃")
         hint2.setObjectName("hintLabel")
         layout.addWidget(hint2)
+
+        hint3 = QLabel("做夜光选择\u201C灰度\u201D，调整夜光强度仅需要调整\u201C输出白点\u201D，建议值：45\u201375")
+        hint3.setObjectName("hintLabel")
+        layout.addWidget(hint3)
 
         layout.addStretch()
         btns = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
