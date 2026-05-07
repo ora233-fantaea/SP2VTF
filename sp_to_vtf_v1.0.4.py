@@ -1,4 +1,4 @@
-"""SP 贴图转 VTF 工具 — 单文件 PySide6 GUI."""
+"""SP 贴图转 VTF 工具 made by 一个橘色的橙子 — 单文件 PySide6 GUI."""
 
 # ── 标准库 ─────────────────────────────────────────────────────────
 import json
@@ -912,7 +912,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("SP 贴图转 VTF 工具")
+        self.setWindowTitle("SP 贴图转 VTF 工具 made by 一个橘色的橙子")
         self.setFixedSize(1304, 852)
 
         self._signals = _Signals()
