@@ -38,6 +38,8 @@
 > - `reciever_mk17_fn_scar_h_std_LOD0f_Base_Color.png`
 > - `reciever_mk17_fn_scar_h_std_LOD0f_Normal_OpenGL.png`
 
+> **建议：** 将 SP 导出的贴图文件夹与游戏 mod 路径分开管理，避免意外覆盖或混淆源文件和输出文件。
+
 ---
 
 ## 如何使用 (普通玩家/模组作者)
