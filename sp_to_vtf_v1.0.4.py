@@ -1180,8 +1180,8 @@ class MainWindow(QMainWindow):
         btn_clear.clicked.connect(self._clear_log)
         lay.addWidget(btn_clear)
 
-        btn_preprocess = QPushButton("预处理设置")
-        btn_preprocess.setFixedWidth(105)
+        btn_preprocess = QPushButton("预处理设置(beta)")
+        btn_preprocess.setFixedWidth(130)
         btn_preprocess.clicked.connect(self._open_preprocess_dialog)
         lay.addWidget(btn_preprocess)
 
