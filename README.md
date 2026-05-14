@@ -132,7 +132,7 @@ pyinstaller SP2VTF_v1.0.4.spec
 
 注：本项目还在持续开发，如果你有建议，请发issue
 
-<iframe src="https://ifdian.net/leaflet?slug=a_bloody_orange" width="640" scrolling="no" height="200" frameborder="0"></iframe><iframe src="https://ifdian.net/leaflet?slug={1}" width="640" scrolling="no" height="200" frameborder="0"></iframe>
+<iframe src="https://ifdian.net/leaflet?slug=a_bloody_orange" width="640" scrolling="no" height="200" frameborder="0"></iframe>
 
 ## 更新日志
 
