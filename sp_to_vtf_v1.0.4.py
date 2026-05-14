@@ -887,7 +887,6 @@ class MainWindow(QMainWindow):
         ("VTFCmd.exe 路径", "vtfcmd", "file"),
         ("SP PNG 文件夹", "png_dir", "dir"),
         ("VMT 文件夹", "vmt_dir", "dir"),
-        ("L4D2 materials 根目录", "materials_dir", "dir"),
     ]
     CHECK_ON = "\u2611"
     CHECK_OFF = "\u2610"
@@ -914,7 +913,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("SP 贴图转 VTF 工具 - made by 一个橘色的橙子")
         self.setFixedWidth(1304)
-        self.setMinimumHeight(600)
+        self.setMinimumHeight(1000)
 
         self.setWindowIcon(QIcon(str(Path(__file__).parent / "tape-x64.png")))
 
@@ -1666,14 +1665,14 @@ class MainWindow(QMainWindow):
             self._signals.finished.emit()
 
     def _convert(self):
-        """核心转换：遍历队列 → VTFCmd 转换 → 复制到 materials 目标路径。"""
+        """核心转换：遍历队列 → VTFCmd 转换 → 输出到 VMT 同级目录。"""
         vtfcmd = Path(self._entries["vtfcmd"].text().strip())
-        materials_dir = Path(self._entries["materials_dir"].text().strip())
+        vmt_dir = Path(self._entries["vmt_dir"].text().strip())
         if not vtfcmd.is_file():
             self._signals.log_msg.emit(f"[错误] VTFCmd.exe 不存在: {vtfcmd}")
             return
-        if not materials_dir.is_dir():
-            self._signals.log_msg.emit(f"[错误] materials 目录不存在: {materials_dir}")
+        if not vmt_dir.is_dir():
+            self._signals.log_msg.emit(f"[错误] VMT 目录不存在: {vmt_dir}")
             return
 
         # 创建预处理临时目录
@@ -1767,7 +1766,7 @@ class MainWindow(QMainWindow):
                 self._signals.log_msg.emit(
                     f"  {param}: {png.name} [{src_str} \u2192 {tgt_str}] -> {fmt}")
 
-                target = materials_dir / (s["rel"] + ".vtf")
+                target = vmt_dir / (s["rel"] + ".vtf")
                 target.parent.mkdir(parents=True, exist_ok=True)
 
                 generated = source.with_suffix(".vtf")
