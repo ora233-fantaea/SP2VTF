@@ -69,7 +69,7 @@
 ### 环境准备
 - Python 3.10 或更高版本。
 - 依赖：`pip install PySide6 Pillow numpy`
-- [VTFCmd.exe](https://nemstools.github.io/pages/VTFLib-Download.html)
+- [VTFCmd.exe](https://qualifing.lanzoum.com/iJJIT3pgau4j)
 
 ### 运行源码
 ```bash
