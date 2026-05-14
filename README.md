@@ -51,7 +51,7 @@
 - 下载并解压 [VTFCmd.exe](https://nemstools.github.io/pages/VTFLib-Download.html) 及其配套的 dll 文件。
 
 ### 2. 运行软件
-1. 前往本仓库的 **Releases** 页面，下载最新版本的 `SP2VTF_v*.exe`。
+1. 前往本仓库的 **Releases** 页面，下载最新版本的 `SP2VTF_v*.tar.gz`。
 2. 解压 `SP2VTF_v*.tar.gz` 得到 `.exe`，双击运行即可。
 
 ### 3. 操作流程
@@ -129,6 +129,10 @@ pyinstaller SP2VTF_v1.0.4.spec
 
 本项目采用 [GPL-3.0 License](https://www.gnu.org/licenses/gpl-3.0) 协议开源。
 允许任何个人或组织自由使用、修改和分发本项目的代码。如若衍生项目包含了本项目的代码，衍生项目同样必须以 GPLv3 协议开源。
+
+注：本项目还在持续开发，如果你有建议，请发issue
+
+<iframe src="https://ifdian.net/leaflet?slug=a_bloody_orange" width="640" scrolling="no" height="200" frameborder="0"></iframe><iframe src="https://ifdian.net/leaflet?slug={1}" width="640" scrolling="no" height="200" frameborder="0"></iframe>
 
 ## 更新日志
 
