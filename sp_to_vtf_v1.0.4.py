@@ -1766,7 +1766,7 @@ class MainWindow(QMainWindow):
                 self._signals.log_msg.emit(
                     f"  {param}: {png.name} [{src_str} \u2192 {tgt_str}] -> {fmt}")
 
-                target = vmt_dir / (s["rel"] + ".vtf")
+                target = vmt.parent / (Path(s["rel"]).stem + ".vtf")
                 target.parent.mkdir(parents=True, exist_ok=True)
 
                 generated = source.with_suffix(".vtf")
