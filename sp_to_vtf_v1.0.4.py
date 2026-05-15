@@ -939,6 +939,8 @@ class MainWindow(QMainWindow):
         self._temp_dir: Path | None = None
 
         self._build_ui()
+        for entry in self._entries.values():
+            entry.textChanged.connect(self._on_path_changed)
         self._load_config()
         self._auto_detect_vtfcmd()
         self._validate_all_paths()
@@ -1294,6 +1296,11 @@ class MainWindow(QMainWindow):
             self._entries[key].setText(path)
             self._validate_path(key, kind)
 
+    def _on_path_changed(self):
+        self._items.clear()
+        self._tree.clear()
+        self._validate_all_paths()
+
     # ── 配置文件读写 ─────────────────────────────────────────────
 
     def _load_config(self):
@@ -1301,9 +1308,13 @@ class MainWindow(QMainWindow):
             return
         try:
             data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+            for entry in self._entries.values():
+                entry.blockSignals(True)
             for k, entry in self._entries.items():
                 if isinstance(data.get(k), str):
                     entry.setText(data[k])
+            for entry in self._entries.values():
+                entry.blockSignals(False)
             if isinstance(data.get("resize_enabled"), bool):
                 self._check_resize.setChecked(data["resize_enabled"])
             if isinstance(data.get("size_enabled"), bool):
