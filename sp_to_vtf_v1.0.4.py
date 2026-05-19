@@ -2,7 +2,6 @@
 
 # ── 标准库 ─────────────────────────────────────────────────────────
 import json
-import math
 import re
 import shutil
 import struct
@@ -13,6 +12,7 @@ import threading
 from datetime import datetime
 from pathlib import Path
 
+import numpy as np
 from PIL import Image
 
 # ── PySide6 ────────────────────────────────────────────────────────
@@ -237,43 +237,16 @@ def image_size(path: Path):
     return None
 
 
-# ── Gamma 2.2 灰度转换 ─────────────────────────────────────────
-def _srgb_to_linear(c: float) -> float:
-    if c <= 0.04045:
-        return c / 12.92
-    return math.pow((c + 0.055) / 1.055, 2.4)
-
-
-def _linear_to_srgb(c: float) -> float:
-    if c <= 0.0031308:
-        return c * 12.92
-    return 1.055 * math.pow(c, 1.0 / 2.4) - 0.055
-
-
 def _make_gray_gamma(rgb_image: Image.Image) -> Image.Image:
-    """sRGB → 线性 → BT.709 亮度 → sRGB，返回灰度通道。"""
-    r, g, b = rgb_image.split()
-
-    def _to_linear(channel):
-        return channel.point(lambda v: int(_srgb_to_linear(v / 255.0) * 65535))
-
-    def _bt709_to_gray(r_lin, g_lin, b_lin):
-        result = Image.new("L", rgb_image.size)
-        rp = r_lin.load()
-        gp = g_lin.load()
-        bp = b_lin.load()
-        rp_out = result.load()
-        for y in range(result.height):
-            for x in range(result.width):
-                y_lin = 0.2126 * rp[x, y] + 0.7152 * gp[x, y] + 0.0722 * bp[x, y]
-                y_lin /= 65535.0
-                rp_out[x, y] = int(max(0, min(255, round(_linear_to_srgb(y_lin) * 255))))
-        return result
-
-    r_lin = _to_linear(r)
-    g_lin = _to_linear(g)
-    b_lin = _to_linear(b)
-    return _bt709_to_gray(r_lin, g_lin, b_lin)
+    """sRGB → 线性 → BT.709 亮度 → sRGB 灰度通道（NumPy 向量化）。"""
+    arr = np.asarray(rgb_image, dtype=np.float32) / 255.0
+    low = arr <= 0.04045
+    linear = np.where(low, arr / 12.92, np.power((arr + 0.055) / 1.055, 2.4))
+    y_lin = 0.2126 * linear[:, :, 0] + 0.7152 * linear[:, :, 1] + 0.0722 * linear[:, :, 2]
+    low_y = y_lin <= 0.0031308
+    y_srgb = np.where(low_y, y_lin * 12.92, 1.055 * np.power(y_lin, 1.0 / 2.4) - 0.055)
+    gray = np.clip(np.rint(y_srgb * 255.0), 0, 255).astype(np.uint8)
+    return Image.fromarray(gray, mode="L")
 
 
 # ── 预处理：PNG → TGA（Alpha 通道生成 + 色阶） ─────────────────
@@ -1315,12 +1288,12 @@ class MainWindow(QMainWindow):
                     entry.setText(data[k])
             for entry in self._entries.values():
                 entry.blockSignals(False)
-            if isinstance(data.get("resize_enabled"), bool):
-                self._check_resize.setChecked(data["resize_enabled"])
             if isinstance(data.get("size_enabled"), bool):
                 self._check_size.setChecked(data["size_enabled"])
             elif isinstance(data.get("resize_enabled"), bool):
                 self._check_size.setChecked(data["resize_enabled"])
+            if isinstance(data.get("resize_enabled"), bool):
+                self._check_resize.setChecked(data["resize_enabled"])
             for key, spin in (("resize_width", self._spin_w), ("resize_height", self._spin_h)):
                 val = data.get(key)
                 if isinstance(val, int) and 128 <= val <= 4096:
@@ -1657,6 +1630,19 @@ class MainWindow(QMainWindow):
         if not self._items:
             self._log("[错误] 请先点击 载入 VMT")
             return
+        self._captured_vtfcmd = Path(self._entries["vtfcmd"].text().strip())
+        self._captured_vmt_dir = Path(self._entries["vmt_dir"].text().strip())
+        self._captured_size_on = self._check_size.isChecked()
+        self._captured_resize_on = self._check_resize.isChecked()
+        self._captured_version = self._combo_version.currentText().strip() or "7.2"
+        self._captured_color_fmt = self._combo_color.currentText().strip() or "DXT1"
+        self._captured_alpha_fmt = self._combo_alpha.currentText().strip() or "DXT5"
+        self._captured_r_method = self._combo_method.currentText().strip().lower() or "nearest"
+        self._captured_r_filter = self._combo_filter.currentText().strip().lower() or "triangle"
+        self._captured_pp_config = {
+            "base": dict(self._preprocess_config["base"]),
+            "normal": dict(self._preprocess_config["normal"]),
+        }
         self._stop_requested = False
         self._btn_run.setEnabled(False)
         self._btn_stop.setEnabled(True)
@@ -1677,8 +1663,8 @@ class MainWindow(QMainWindow):
 
     def _convert(self):
         """核心转换：遍历队列 → VTFCmd 转换 → 输出到 VMT 同级目录。"""
-        vtfcmd = Path(self._entries["vtfcmd"].text().strip())
-        vmt_dir = Path(self._entries["vmt_dir"].text().strip())
+        vtfcmd = self._captured_vtfcmd
+        vmt_dir = self._captured_vmt_dir
         if not vtfcmd.is_file():
             self._signals.log_msg.emit(f"[错误] VTFCmd.exe 不存在: {vtfcmd}")
             return
@@ -1686,49 +1672,48 @@ class MainWindow(QMainWindow):
             self._signals.log_msg.emit(f"[错误] VMT 目录不存在: {vmt_dir}")
             return
 
-        # 创建预处理临时目录
-        temp_dir = None
-        try:
-            temp_dir = Path(tempfile.mkdtemp(prefix="sp2vtf_"))
-            self._temp_dir = temp_dir
-
-            size_on = self._check_size.isChecked()
-            resize_on = self._check_resize.isChecked()
-            if size_on:
-                for data in self._items.values():
-                    for slot in ("base", "normal"):
-                        s = data[slot]
-                        if s["enabled"] and s["checked"]:
-                            if not (128 <= s["target_w"] <= 4096 and 128 <= s["target_h"] <= 4096):
-                                self._signals.log_msg.emit(
-                                    f"[错误] {data['vmt'].name} {s['param']} "
-                                    f"目标分辨率 {s['target_w']}x{s['target_h']} 越界（128~4096）")
-                                return
-                self._signals.log_msg.emit("分辨率: 启用（每项使用自身目标分辨率）")
-            else:
-                self._signals.log_msg.emit("分辨率: 关闭（保持原始尺寸）")
-
-            queue = []
+        size_on = self._captured_size_on
+        resize_on = self._captured_resize_on
+        if size_on:
             for data in self._items.values():
                 for slot in ("base", "normal"):
                     s = data[slot]
                     if s["enabled"] and s["checked"]:
-                        queue.append((data["vmt"], s, slot))
-            if not queue:
-                self._signals.log_msg.emit("[错误] 没有勾选任何要替换的项")
-                return
+                        if not (128 <= s["target_w"] <= 4096 and 128 <= s["target_h"] <= 4096):
+                            self._signals.log_msg.emit(
+                                f"[错误] {data['vmt'].name} {s['param']} "
+                                f"目标分辨率 {s['target_w']}x{s['target_h']} 越界（128~4096）")
+                            return
+            self._signals.log_msg.emit("分辨率: 启用（每项使用自身目标分辨率）")
+        else:
+            self._signals.log_msg.emit("分辨率: 关闭（保持原始尺寸）")
 
-            version = self._combo_version.currentText().strip() or "7.2"
-            color_fmt = self._combo_color.currentText().strip() or "DXT1"
-            alpha_fmt = self._combo_alpha.currentText().strip() or "DXT5"
-            r_method = self._combo_method.currentText().strip().lower() or "nearest"
-            r_filter = self._combo_filter.currentText().strip().lower() or "triangle"
-            self._signals.log_msg.emit(
-                f"VTF 参数: 版本={version}, Color={color_fmt} (basetexture), Alpha={alpha_fmt} (bumpmap)")
-            if resize_on:
-                self._signals.log_msg.emit(f"Resize: method={r_method}, filter={r_filter}")
-            else:
-                self._signals.log_msg.emit("Resize: 关闭（不附加 -rmethod/-rfilter）")
+        queue = []
+        for data in self._items.values():
+            for slot in ("base", "normal"):
+                s = data[slot]
+                if s["enabled"] and s["checked"]:
+                    queue.append((data["vmt"], s, slot))
+        if not queue:
+            self._signals.log_msg.emit("[错误] 没有勾选任何要替换的项")
+            return
+
+        version = self._captured_version
+        color_fmt = self._captured_color_fmt
+        alpha_fmt = self._captured_alpha_fmt
+        r_method = self._captured_r_method
+        r_filter = self._captured_r_filter
+        self._signals.log_msg.emit(
+            f"VTF 参数: 版本={version}, Color={color_fmt} (basetexture), Alpha={alpha_fmt} (bumpmap)")
+        if resize_on:
+            self._signals.log_msg.emit(f"Resize: method={r_method}, filter={r_filter}")
+        else:
+            self._signals.log_msg.emit("Resize: 关闭（不附加 -rmethod/-rfilter）")
+
+        temp_dir = None
+        try:
+            temp_dir = Path(tempfile.mkdtemp(prefix="sp2vtf_"))
+            self._temp_dir = temp_dir
 
             total = len(queue)
             self._signals.log_msg.emit(f"开始转换，共 {total} 项")
@@ -1762,8 +1747,7 @@ class MainWindow(QMainWindow):
                         resize_flags.append("-resize")
                     resize_flags += ["-rmethod", r_method, "-rfilter", r_filter]
 
-                # 预处理
-                pp_config = self._preprocess_config[slot_name]
+                pp_config = self._captured_pp_config[slot_name]
                 source = png
                 if pp_config.get("alpha_enabled"):
                     try:
@@ -1809,10 +1793,8 @@ class MainWindow(QMainWindow):
 
                 if not same_location:
                     try:
-                        # 先拷贝到目标目录（避免跨盘 move 失败导致旧文件已被删除）
                         tmp = target.with_suffix(target.suffix + ".tmp")
                         shutil.copy2(str(generated), str(tmp))
-                        # 目标目录内的重命名是同盘的原子操作
                         tmp.replace(target)
                         self._cleanup_generated(generated)
                     except OSError as e:
