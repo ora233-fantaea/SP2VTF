@@ -854,6 +854,347 @@ class CompareDialog(QDialog):
         return f"{size_bytes / 1024:.1f} KiB"
 
 
+class ExportNormalDialog(QDialog):
+    """新窗口：从模组 materials 目录导出 bumpmap VTF 为 TGA 法线贴图。"""
+    def __init__(self, parent, vtfcmd_path: Path):
+        super().__init__(parent)
+        self.setWindowTitle("导出法线贴图 TGA")
+        self.setMinimumSize(1000, 700)
+        self.resize(1100, 750)
+
+        self._vtfcmd = Path(vtfcmd_path) if vtfcmd_path else None
+        self._items: dict[QTreeWidgetItem, dict] = {}
+        self._signals = _Signals()
+        self._stop_requested = False
+
+        self._build_ui()
+        self._signals.log_msg.connect(self._log_append)
+        self._signals.progress.connect(self._on_progress)
+        self._signals.finished.connect(self._on_export_finished)
+
+    def _build_ui(self):
+        main_lay = QVBoxLayout(self)
+        main_lay.setContentsMargins(12, 12, 12, 12)
+        main_lay.setSpacing(8)
+
+        # ── 路径组 ──
+        paths_grp = QGroupBox("路径设置")
+        paths_grid = QGridLayout(paths_grp)
+        paths_grid.setColumnStretch(1, 1)
+
+        lbl_mats = QLabel("materials 根目录")
+        lbl_mats.setFixedWidth(140)
+        paths_grid.addWidget(lbl_mats, 0, 0)
+        self._entry_root = QLineEdit()
+        self._entry_root.setPlaceholderText("选择 L4D2 addon 的 materials 根目录…")
+        paths_grid.addWidget(self._entry_root, 0, 1)
+        btn_root = QPushButton("浏览…")
+        btn_root.setFixedWidth(60)
+        btn_root.clicked.connect(self._browse_root)
+        paths_grid.addWidget(btn_root, 0, 2)
+
+        lbl_out = QLabel("输出文件夹")
+        lbl_out.setFixedWidth(140)
+        paths_grid.addWidget(lbl_out, 1, 0)
+        self._entry_output = QLineEdit()
+        self._entry_output.setPlaceholderText("选择 TGA 输出目录…")
+        paths_grid.addWidget(self._entry_output, 1, 1)
+        btn_out = QPushButton("浏览…")
+        btn_out.setFixedWidth(60)
+        btn_out.clicked.connect(self._browse_output)
+        paths_grid.addWidget(btn_out, 1, 2)
+
+        lbl_vtf = QLabel("VTFCmd.exe")
+        lbl_vtf.setFixedWidth(140)
+        paths_grid.addWidget(lbl_vtf, 2, 0)
+        vtf_info = QLabel(str(self._vtfcmd) if self._vtfcmd else "(未配置)")
+        vtf_info.setStyleSheet("color: #9E9E9E;")
+        vtf_info.setWordWrap(True)
+        paths_grid.addWidget(vtf_info, 2, 1)
+        main_lay.addWidget(paths_grp)
+
+        # ── 按钮栏 ──
+        bar_lay = QHBoxLayout()
+        bar_lay.setSpacing(6)
+
+        op_lbl = QLabel("操作")
+        op_lbl.setObjectName("groupLabel")
+        bar_lay.addWidget(op_lbl)
+
+        btn_scan = QPushButton("扫描 VMT")
+        btn_scan.setFixedWidth(95)
+        btn_scan.clicked.connect(self._scan)
+        bar_lay.addWidget(btn_scan)
+
+        sep0 = QFrame()
+        sep0.setFrameShape(QFrame.VLine)
+        sep0.setFrameShadow(QFrame.Sunken)
+        bar_lay.addWidget(sep0)
+
+        sel_lbl = QLabel("选择")
+        sel_lbl.setObjectName("groupLabel")
+        bar_lay.addWidget(sel_lbl)
+
+        btn_all = QPushButton("全选")
+        btn_all.setFixedWidth(70)
+        btn_all.clicked.connect(lambda: self._select_all(True))
+        bar_lay.addWidget(btn_all)
+
+        btn_none = QPushButton("全不选")
+        btn_none.setFixedWidth(70)
+        btn_none.clicked.connect(lambda: self._select_all(False))
+        bar_lay.addWidget(btn_none)
+
+        sep1 = QFrame()
+        sep1.setFrameShape(QFrame.VLine)
+        sep1.setFrameShadow(QFrame.Sunken)
+        bar_lay.addWidget(sep1)
+
+        export_lbl = QLabel("导出")
+        export_lbl.setObjectName("groupLabel")
+        bar_lay.addWidget(export_lbl)
+
+        self._btn_export = QPushButton("开始导出")
+        self._btn_export.setObjectName("accentButton")
+        self._btn_export.setFixedWidth(105)
+        self._btn_export.clicked.connect(self._start_export)
+        bar_lay.addWidget(self._btn_export)
+
+        self._btn_stop = QPushButton("\u25a0 停止")
+        self._btn_stop.setObjectName("dangerButton")
+        self._btn_stop.setFixedWidth(75)
+        self._btn_stop.setEnabled(False)
+        self._btn_stop.clicked.connect(self._on_stop)
+        bar_lay.addWidget(self._btn_stop)
+
+        bar_lay.addStretch()
+        main_lay.addLayout(bar_lay)
+
+        # ── 树列表 ──
+        tree_grp = QGroupBox("Bumpmap 列表")
+        tree_vlay = QVBoxLayout(tree_grp)
+        self._tree = QTreeWidget()
+        self._tree.setColumnCount(4)
+        self._tree.setHeaderLabels(["", "VMT 文件", "$bumpmap 路径", "VTF 状态"])
+        self._tree.setAlternatingRowColors(True)
+        self._tree.setRootIsDecorated(False)
+        self._tree.itemClicked.connect(self._on_tree_clicked)
+        tree_vlay.addWidget(self._tree)
+        main_lay.addWidget(tree_grp, 1)
+
+        # ── 日志 ──
+        log_grp = QGroupBox("导出日志")
+        log_vlay = QVBoxLayout(log_grp)
+        self._log_edit = QTextEdit()
+        self._log_edit.setReadOnly(True)
+        self._log_edit.setFont(QFont("Consolas", 9))
+        self._log_edit.setMaximumHeight(180)
+        log_vlay.addWidget(self._log_edit)
+        main_lay.addWidget(log_grp)
+
+        # ── 状态栏 ──
+        self._status_label = QLabel("就绪")
+        self._progress_bar = QProgressBar()
+        self._progress_bar.setMaximumWidth(260)
+        self._progress_bar.setVisible(False)
+
+        sb = QStatusBar(self)
+        sb.addWidget(self._status_label, 1)
+        sb.addPermanentWidget(self._progress_bar)
+        main_lay.addWidget(sb)
+
+    def _browse_root(self):
+        path = QFileDialog.getExistingDirectory(self, "选择 materials 根目录")
+        if path:
+            self._entry_root.setText(path)
+
+    def _browse_output(self):
+        path = QFileDialog.getExistingDirectory(self, "选择 TGA 输出目录")
+        if path:
+            self._entry_output.setText(path)
+
+    # ── 扫描 ──
+
+    def _scan(self):
+        root = Path(self._entry_root.text().strip())
+        if not root.is_dir():
+            self._log_msg_emit("[错误] materials 根目录不存在")
+            return
+
+        self._tree.clear()
+        self._items.clear()
+
+        vmts = sorted(root.rglob("*.vmt"))
+        if not vmts:
+            self._log_msg_emit("[错误] 未找到任何 .vmt 文件")
+            return
+
+        count = 0
+        valid = 0
+        for vmt_path in vmts:
+            raw = parse_vmt(vmt_path)
+            bumpmap_val = raw.get("$bumpmap", "")
+            if not bumpmap_val:
+                continue
+
+            vtf_rel = Path(bumpmap_val.replace("\\", "/") + ".vtf")
+            vtf_path = root / vtf_rel
+
+            item = QTreeWidgetItem()
+            item.setText(1, vmt_path.relative_to(root).as_posix())
+            item.setText(2, bumpmap_val)
+
+            if vtf_path.is_file():
+                sz = vtf_path.stat().st_size
+                item.setText(3, f"{vtf_path}  ({sz / 1024:.1f} KiB)")
+                item.setCheckState(0, Qt.Checked)
+                vtf = vtf_path
+                valid += 1
+            else:
+                item.setText(3, f"[找不到] {vtf_path}")
+                item.setCheckState(0, Qt.Unchecked)
+                item.setFlags(item.flags() & ~Qt.ItemIsUserCheckable)
+                vtf = None
+
+            self._items[item] = {"vmt": vmt_path, "rel": bumpmap_val, "vtf": vtf}
+            self._tree.addTopLevelItem(item)
+            count += 1
+
+        self._log_msg_emit(f"扫描完成：找到 {count} 个 bumpmap 条目（{valid} 个 VTF 存在）")
+
+    def _on_tree_clicked(self, item, column):
+        if column != 0 or item not in self._items:
+            return
+        if not (item.flags() & Qt.ItemIsUserCheckable):
+            return
+
+    # ── 导出 ──
+
+    def _start_export(self):
+        if not self._items:
+            self._log_msg_emit("[错误] 请先点击 扫描 VMT")
+            return
+        if not self._vtfcmd or not self._vtfcmd.is_file():
+            self._log_msg_emit(f"[错误] VTFCmd.exe 不存在: {self._vtfcmd}")
+            return
+
+        output_dir = Path(self._entry_output.text().strip())
+        if not str(output_dir):
+            self._log_msg_emit("[错误] 请先选择输出文件夹")
+            return
+        try:
+            output_dir.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            self._log_msg_emit(f"[错误] 无法创建输出目录: {e}")
+            return
+
+        queue = []
+        for item, data in self._items.items():
+            if item.checkState(0) == Qt.Checked and data["vtf"]:
+                queue.append((item, data))
+
+        if not queue:
+            self._log_msg_emit("[错误] 没有勾选任何可导出的项")
+            return
+
+        self._btn_export.setEnabled(False)
+        self._btn_stop.setEnabled(True)
+        self._stop_requested = False
+        self._progress_bar.setVisible(True)
+        self._status_label.setText("导出中…")
+
+        captured_vtfcmd = self._vtfcmd
+        captured_output = output_dir
+        threading.Thread(target=self._export_safe, args=(queue, captured_vtfcmd, captured_output), daemon=True).start()
+
+    def _on_stop(self):
+        self._stop_requested = True
+
+    def _export_safe(self, queue, vtfcmd, output_dir):
+        try:
+            self._export_worker(queue, vtfcmd, output_dir)
+        except Exception as e:
+            self._signals.log_msg.emit(f"[异常] {e}")
+        finally:
+            self._signals.finished.emit()
+
+    def _export_worker(self, queue, vtfcmd, output_dir):
+        total = len(queue)
+        success = fail = 0
+
+        for i, (item, data) in enumerate(queue):
+            if self._stop_requested:
+                self._signals.log_msg.emit("[提示] 用户中止导出")
+                break
+
+            vtf = data["vtf"]
+            vmt_name = data["vmt"].name
+            tga_name = vtf.stem + ".tga"
+            tga_path = output_dir / tga_name
+
+            self._signals.progress.emit(i + 1, total, f"导出中… {i + 1}/{total}")
+
+            self._signals.log_msg.emit(f"  {vmt_name}: {vtf.name} → {tga_name}")
+
+            cmd = [str(vtfcmd), "-file", str(vtf), "-output", str(output_dir),
+                   "-exportformat", "tga", "-silent"]
+            try:
+                proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            except (OSError, subprocess.TimeoutExpired) as e:
+                self._signals.log_msg.emit(f"    [失败] 调用 VTFCmd 出错: {e}")
+                fail += 1
+                continue
+
+            if proc.returncode != 0 or not tga_path.exists():
+                self._signals.log_msg.emit(f"    [失败] VTFCmd 返回 {proc.returncode}")
+                if proc.stderr.strip():
+                    self._signals.log_msg.emit(f"    stderr: {proc.stderr.strip()}")
+                fail += 1
+                continue
+
+            self._signals.log_msg.emit(f"    [成功] -> {tga_path}")
+            success += 1
+
+        self._signals.log_msg.emit(f"==== 导出完成：成功 {success}，失败 {fail} ====")
+        self._signals.progress.emit(success + fail, success + fail, f"导出完成 · 成功 {success} · 失败 {fail}")
+
+    def _on_export_finished(self):
+        self._btn_export.setEnabled(True)
+        self._btn_stop.setEnabled(False)
+        self._progress_bar.setVisible(False)
+        self._status_label.setText("就绪")
+
+    # ── 选择 / 日志 ──
+
+    def _select_all(self, checked):
+        state = Qt.Checked if checked else Qt.Unchecked
+        for item in self._items:
+            if item.flags() & Qt.ItemIsUserCheckable:
+                item.setCheckState(0, state)
+
+    def _log_msg_emit(self, msg: str):
+        self._signals.log_msg.emit(msg)
+
+    def _log_append(self, msg: str):
+        ts = datetime.now().strftime("%H:%M:%S")
+        self._log_edit.append(f"[{ts}] {msg}")
+
+    def _on_progress(self, current, total, status_text):
+        if self._progress_bar.maximum() != total:
+            self._progress_bar.setMaximum(total)
+        self._progress_bar.setValue(current)
+        if status_text:
+            self._status_label.setText(status_text)
+
+    @staticmethod
+    def _format_size(size_bytes):
+        if size_bytes is None:
+            return "\u2014"
+        if size_bytes < 1024:
+            return f"{size_bytes} B"
+        return f"{size_bytes / 1024:.1f} KiB"
+
+
 class MainWindow(QMainWindow):
     """主窗口：路径配置 + VMT 列表 + 输出设置 + 转换执行。"""
     FIELDS = [
@@ -1164,6 +1505,11 @@ class MainWindow(QMainWindow):
         btn_compare.setFixedWidth(95)
         btn_compare.clicked.connect(self._open_compare_dialog)
         lay.addWidget(btn_compare)
+
+        btn_export_normal = QPushButton("导出法线 TGA")
+        btn_export_normal.setFixedWidth(115)
+        btn_export_normal.clicked.connect(self._open_export_normal_dialog)
+        lay.addWidget(btn_export_normal)
         return lay
 
     def _build_tree_group(self):
@@ -1899,6 +2245,11 @@ class MainWindow(QMainWindow):
 
     def _open_compare_dialog(self):
         dlg = CompareDialog(self)
+        dlg.exec()
+
+    def _open_export_normal_dialog(self):
+        vtf_path = Path(self._entries["vtfcmd"].text().strip())
+        dlg = ExportNormalDialog(self, vtf_path)
         dlg.exec()
 
     def _clear_log(self):
