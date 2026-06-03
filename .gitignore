@@ -7,7 +7,13 @@ dist/
 abandon/
 *.spec
 sp_to_vtf copy.py
-# Python 缓存文件 (预防性添加)
+
+# Python 缓存文件
 __pycache__/
 *.py[cod]
+*.pyo
 *$py.class
+
+# 系统文件
+.DS_Store
+Thumbs.db
