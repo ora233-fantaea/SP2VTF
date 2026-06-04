@@ -91,94 +91,473 @@ RESIZE_FILTER_HELP = {
     "kaiser": "Kaiser 滤波",
 }
 
-# ── 全局 QSS 样式表（Material Design 3 风格） ────────────────────
+# ── 全局 QSS 样式表（Modern Material 3 风格） ────────────────────
 APP_STYLESHEET = """
-/* ── 全局 ───────────────────────────────── */
-QMainWindow, QDialog { background: #F5F5F5; }
-QWidget { font-family: "Microsoft YaHei UI", "Roboto", "Segoe UI", sans-serif; color: #212121; font-size: 9pt; }
-/* ── QGroupBox (Material Card) ──────────── */
+/* ── 全局基础 ────────────────────────────── */
+QMainWindow, QDialog {
+    background: #F0F2F5;
+}
+QWidget {
+    font-family: "Microsoft YaHei UI", "Segoe UI", -apple-system, sans-serif;
+    color: #1F2937;
+    font-size: 10pt;
+}
+QWidget:disabled { color: #9CA3AF; }
+
+/* ── 工具提示 ───────────────────────────── */
+QToolTip {
+    background: #1F2937;
+    color: #F9FAFB;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 8.5pt;
+}
+
+/* ── GroupBox (卡片容器) ─────────────────── */
 QGroupBox {
-    background: #FFFFFF; border: none; border-radius: 12px;
-    margin-top: 18px; padding: 18px 12px 10px 12px; font-size: 9.5pt;
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    margin-top: 20px;
+    padding: 22px 14px 12px 14px;
+    font-size: 10pt;
 }
 QGroupBox::title {
-    subcontrol-origin: margin; subcontrol-position: top left; left: 16px;
-    padding: 0 10px; color: #1976D2; font-weight: 500; background: #FFFFFF; border-radius: 4px;
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 18px;
+    padding: 2px 10px;
+    color: #3B82F6;
+    font-weight: 600;
+    background: #FFFFFF;
+    border-radius: 4px;
 }
-/* ── QLabel ─────────────────────────────── */
-QLabel#groupLabel { color: #9E9E9E; font-size: 8pt; font-weight: 600; text-transform: uppercase; }
-QLabel#hintLabel { color: #9E9E9E; font-size: 8.5pt; }
-QLabel#errorLabel { color: #D32F2F; font-size: 8.5pt; }
-/* ── QLineEdit ──────────────────────────── */
-QLineEdit { border: 1px solid #BDBDBD; border-radius: 8px; padding: 7px 10px; background: #FAFAFA; }
-QLineEdit:focus { border: 2px solid #1976D2; padding: 6px 9px; background: #FFFFFF; }
-QLineEdit:hover:!focus { border-color: #757575; background: #FFFFFF; }
-QLineEdit:disabled { background: #F0F0F0; color: #BDBDBD; }
-/* ── QPushButton ────────────────────────── */
-QPushButton { border: none; border-radius: 8px; padding: 6px 16px; background: transparent; color: #1976D2; font-weight: 500; }
-QPushButton:hover { background: rgba(25,118,210,0.08); }
-QPushButton:pressed { background: rgba(25,118,210,0.14); }
-QPushButton:disabled { color: #BDBDBD; background: transparent; }
-QPushButton#accentButton { background: #1976D2; color: #FFFFFF; border-radius: 20px; padding: 7px 24px; font-weight: 600; font-size: 9.5pt; }
-QPushButton#accentButton:hover { background: #1565C0; }
-QPushButton#accentButton:pressed { background: #0D47A1; }
-QPushButton#accentButton:disabled { background: #E0E0E0; color: #9E9E9E; }
-QPushButton#dangerButton { color: #D32F2F; border: 1px solid #EF9A9A; border-radius: 8px; padding: 5px 16px; }
-QPushButton#dangerButton:hover { background: rgba(211,47,47,0.06); }
-QPushButton#dangerButton:disabled { color: #BDBDBD; border-color: #E0E0E0; background: transparent; }
-/* ── QComboBox ──────────────────────────── */
-QComboBox { border: 1px solid #BDBDBD; border-radius: 8px; padding: 5px 8px; background: #FAFAFA; min-width: 60px; }
-QComboBox:focus { border: 2px solid #1976D2; padding: 4px 7px; background: #FFFFFF; }
-QComboBox:hover:!focus { border-color: #757575; background: #FFFFFF; }
-QComboBox::drop-down { border: none; width: 24px; }
-QComboBox QAbstractItemView { border: 1px solid #E0E0E0; border-radius: 8px; background: #FFFFFF; selection-background-color: #E3F2FD; selection-color: #212121; outline: none; padding: 6px 2px; }
-/* ── QSpinBox ───────────────────────────── */
-QSpinBox { border: 1px solid #BDBDBD; border-radius: 8px; padding: 5px 8px; background: #FAFAFA; }
-QSpinBox:focus { border: 2px solid #1976D2; padding: 4px 7px; background: #FFFFFF; }
-QSpinBox:hover:!focus { border-color: #757575; background: #FFFFFF; }
-QSpinBox:disabled { background: #F0F0F0; color: #BDBDBD; }
-QSpinBox::up-button { border: none; border-radius: 0 6px 0 0; width: 20px; background: #F5F5F5; }
-QSpinBox::down-button { border: none; border-radius: 0 0 6px 0; width: 20px; background: #F5F5F5; }
-QSpinBox::up-button:hover, QSpinBox::down-button:hover { background: #E3F2FD; }
-/* ── QCheckBox ──────────────────────────── */
-QCheckBox { spacing: 8px; color: #212121; padding: 2px 0; }
-QCheckBox::indicator { width: 18px; height: 18px; border: 2px solid #757575; border-radius: 2px; background: transparent; }
-QCheckBox::indicator:checked { background: #1976D2; border-color: #1976D2; }
-QCheckBox::indicator:hover { border-color: #1976D2; }
-QCheckBox:disabled { color: #BDBDBD; }
-QCheckBox:disabled::indicator { border-color: #E0E0E0; background: #F5F5F5; }
-/* ── QTreeWidget ────────────────────────── */
-QTreeWidget { border: 1px solid #E0E0E0; border-radius: 10px; background: #FFFFFF; alternate-background-color: #F8F8F8; outline: none; padding: 4px; }
-QTreeWidget::item { padding: 5px 6px; min-height: 24px; }
-QTreeWidget::item:hover { background: #E3F2FD; }
-QTreeWidget::item:selected { background: #BBDEFB; color: #212121; }
-QHeaderView::section { background: #FAFAFA; color: #616161; font-weight: 600; border: none; border-bottom: 2px solid #1976D2; padding: 8px 10px; font-size: 8.5pt; }
-QTreeWidget::branch { background: transparent; }
-/* ── QTextEdit#logEdit ──────────────────── */
-QTextEdit#logEdit { border: 1px solid #E0E0E0; border-radius: 10px; background: #FAFAFA; padding: 8px 10px; font-family: "Cascadia Code","Consolas","SF Mono",monospace; font-size: 9pt; color: #37474F; }
-/* ── QProgressBar ───────────────────────── */
-QProgressBar { border: none; border-radius: 4px; background: #E7E0EC; height: 4px; min-height: 4px; text-align: center; font-size: 7pt; color: transparent; }
-QProgressBar::chunk { background: #1976D2; border-radius: 4px; }
-/* ── QStatusBar ─────────────────────────── */
-QStatusBar { background: #FFFFFF; border-top: 1px solid #E0E0E0; padding: 4px 10px; font-size: 8.5pt; }
-QStatusBar QLabel { color: #757575; }
-/* ── QSplitter ──────────────────────────── */
-QSplitter::handle { background: #E0E0E0; height: 1px; }
-QSplitter::handle:hover { background: #1976D2; height: 2px; }
-/* ── QScrollBar ─────────────────────────── */
-QScrollBar:vertical { background: transparent; width: 8px; margin: 2px; }
-QScrollBar::handle:vertical { background: rgba(0,0,0,0.18); border-radius: 4px; min-height: 32px; }
-QScrollBar::handle:vertical:hover { background: rgba(0,0,0,0.32); }
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: transparent; }
-QScrollBar:horizontal { background: transparent; height: 8px; margin: 2px; }
-QScrollBar::handle:horizontal { background: rgba(0,0,0,0.18); border-radius: 4px; min-width: 32px; }
-QScrollBar::handle:horizontal:hover { background: rgba(0,0,0,0.32); }
-QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0; }
-QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal { background: transparent; }
-/* ── QFrame / QDialogButtonBox ──────────── */
-QFrame[frameShape="4"], QFrame[frameShape="5"] { color: #E0E0E0; }
-QDialogButtonBox QPushButton { min-width: 76px; }
+
+/* ── QLabel 样式变体 ────────────────────── */
+QLabel#groupLabel {
+    color: #6B7280;
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+QLabel#hintLabel {
+    color: #9CA3AF;
+    font-size: 8.5pt;
+}
+QLabel#errorLabel {
+    color: #DC2626;
+    font-size: 8.5pt;
+}
+
+/* ── QLineEdit 输入框 ───────────────────── */
+QLineEdit {
+    border: 1.5px solid #D1D5DB;
+    border-radius: 8px;
+    padding: 8px 12px;
+    background: #FAFAFA;
+    selection-background-color: #BFDBFE;
+}
+QLineEdit:focus {
+    border: 2px solid #3B82F6;
+    padding: 7.5px 11px;
+    background: #FFFFFF;
+}
+QLineEdit:hover:!focus {
+    border-color: #9CA3AF;
+    background: #FFFFFF;
+}
+QLineEdit:disabled {
+    background: #F3F4F6;
+    color: #D1D5DB;
+    border-color: #E5E7EB;
+}
+QLineEdit::placeholder { color: #C4CCD9; }
+
+/* ── QPushButton 按钮 ────────────────────── */
+QPushButton {
+    border: 1.5px solid transparent;
+    border-radius: 8px;
+    padding: 7px 18px;
+    background: transparent;
+    color: #3B82F6;
+    font-weight: 500;
+    font-size: 9pt;
+}
+QPushButton:hover {
+    background: rgba(59,130,246,0.07);
+    border-color: rgba(59,130,246,0.25);
+}
+QPushButton:pressed {
+    background: rgba(59,130,246,0.15);
+    border-color: rgba(59,130,246,0.35);
+}
+QPushButton:disabled {
+    color: #D1D5DB;
+    background: transparent;
+    border-color: transparent;
+}
+
+/* 强调按钮 (主操作) */
+QPushButton#accentButton {
+    background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+        stop:0 #4F8EF7, stop:1 #2563EB);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 26px;
+    font-weight: 600;
+    font-size: 9.5pt;
+}
+QPushButton#accentButton:hover {
+    background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+        stop:0 #60A5FA, stop:1 #3B82F6);
+}
+QPushButton#accentButton:pressed {
+    background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+        stop:0 #2563EB, stop:1 #1D4ED8);
+}
+QPushButton#accentButton:disabled {
+    background: #E5E7EB;
+    color: #9CA3AF;
+}
+
+/* 危险按钮 */
+QPushButton#dangerButton {
+    color: #DC2626;
+    border: 1.5px solid #FECACA;
+    border-radius: 8px;
+    padding: 6px 18px;
+    background: transparent;
+}
+QPushButton#dangerButton:hover {
+    background: rgba(220,38,38,0.05);
+    border-color: #FCA5A5;
+}
+QPushButton#dangerButton:disabled {
+    color: #D1D5DB;
+    border-color: #E5E7EB;
+    background: transparent;
+}
+
+/* ── QComboBox 下拉框 ────────────────────── */
+QComboBox {
+    border: 1.5px solid #D1D5DB;
+    border-radius: 8px;
+    padding: 7px 10px;
+    background: #FAFAFA;
+    min-width: 60px;
+    selection-background-color: #EFF6FF;
+}
+QComboBox:focus {
+    border: 2px solid #3B82F6;
+    padding: 6px 9px;
+    background: #FFFFFF;
+}
+QComboBox:hover:!focus {
+    border-color: #9CA3AF;
+    background: #FFFFFF;
+}
+QComboBox::drop-down {
+    border: none;
+    width: 28px;
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+}
+QComboBox::down-arrow {
+    image: none;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #6B7280;
+    margin-right: 8px;
+}
+QComboBox QAbstractItemView {
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    background: #FFFFFF;
+    selection-background-color: #EFF6FF;
+    selection-color: #1F2937;
+    outline: none;
+    padding: 6px 4px;
+}
+QComboBox QAbstractItemView::item {
+    min-height: 28px;
+    padding: 4px 12px;
+    border-radius: 6px;
+}
+QComboBox QAbstractItemView::item:hover {
+    background: #F3F4F6;
+}
+
+/* ── QSpinBox 数字框 ────────────────────── */
+QSpinBox {
+    border: 1.5px solid #D1D5DB;
+    border-radius: 8px;
+    padding: 7px 10px;
+    background: #FAFAFA;
+}
+QSpinBox:focus {
+    border: 2px solid #3B82F6;
+    padding: 6px 9px;
+    background: #FFFFFF;
+}
+QSpinBox:hover:!focus {
+    border-color: #9CA3AF;
+    background: #FFFFFF;
+}
+QSpinBox:disabled {
+    background: #F3F4F6;
+    color: #D1D5DB;
+    border-color: #E5E7EB;
+}
+QSpinBox::up-button {
+    border: none;
+    border-radius: 0 7px 0 0;
+    width: 24px;
+    background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #F9FAFB,stop:1 #F3F4F6);
+}
+QSpinBox::down-button {
+    border: none;
+    border-radius: 0 0 7px 0;
+    width: 24px;
+    background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #F3F4F6,stop:0 #F9FAFB);
+}
+QSpinBox::up-button:hover, QSpinBox::down-button:hover {
+    background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #EFF6FF,stop:1 #DBEAFE);
+}
+QSpinBox::up-arrow {
+    image: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 5px solid #6B7280;
+    width: 0; height: 0;
+}
+QSpinBox::down-arrow {
+    image: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #6B7280;
+    width: 0; height: 0;
+}
+
+/* ── QCheckBox 复选框 ────────────────────── */
+QCheckBox {
+    spacing: 10px;
+    color: #1F2937;
+    padding: 3px 0;
+}
+QCheckBox::indicator {
+    width: 19px; height: 19px;
+    border: 2px solid #9CA3AF;
+    border-radius: 5px;
+    background: #FFFFFF;
+}
+QCheckBox::indicator:checked {
+    background: #3B82F6;
+    border-color: #3B82F6;
+}
+QCheckBox::indicator:hover {
+    border-color: #3B82F6;
+}
+QCheckBox:disabled { color: #D1D5DB; }
+QCheckBox:disabled::indicator {
+    border-color: #E5E7EB;
+    background: #F3F4F6;
+}
+
+/* ── QTreeWidget 树形列表 ────────────────── */
+QTreeWidget {
+    border: 1.5px solid #E5E7EB;
+    border-radius: 11px;
+    background: #FFFFFF;
+    alternate-background-color: #F9FAFB;
+    outline: none;
+    padding: 6px;
+}
+QTreeWidget::item {
+    padding: 6px 8px;
+    min-height: 27px;
+}
+QTreeWidget::item:hover {
+    background: #EFF6FF;
+}
+QTreeWidget::item:selected {
+    background: #BFDBFE;
+    color: #1E40AF;
+}
+QHeaderView::section {
+    background: #F8FAFC;
+    color: #374151;
+    font-weight: 700;
+    border: none;
+    border-bottom: 2.5px solid #3B82F6;
+    padding: 9px 12px;
+    font-size: 8.5pt;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+QTreeWidget::branch {
+    background: transparent;
+}
+QTreeWidget::branch:has-children:!has-siblings:closed,
+QTreeWidget::branch:closed:has-children:has-siblings {
+    image: none;
+    border-left: 6px solid transparent;
+    border-top: 6px solid #93C5FD;
+    margin-left: 4px;
+}
+QTreeWidget::branch:open:has-children:!has-siblings,
+QTreeWidget::branch:open:has-children:has-siblings {
+    image: none;
+    border-left: 6px solid transparent;
+    border-top: 6px solid #93C5FD;
+    border-left: 6px solid #93C5FD;
+    margin-left: 4px;
+}
+
+/* ── QTextEdit#logEdit 日志区域 ─────────── */
+QTextEdit#logEdit {
+    border: 1.5px solid #E5E7EB;
+    border-radius: 11px;
+    background: #111827;
+    padding: 10px 14px;
+    font-family: "Cascadia Code", "Consolas", "JetBrains Mono", monospace;
+    font-size: 9pt;
+    color: #E5E7EB;
+    selection-background-color: #3B82F6;
+    selection-color: #FFFFFF;
+}
+QTextEdit#logEdit:focus {
+    border-color: #3B82F6;
+}
+
+/* ── QProgressBar 进度条 ────────────────── */
+QProgressBar {
+    border: none;
+    border-radius: 5px;
+    background: #E2E8F0;
+    height: 8px;
+    min-height: 8px;
+    text-align: center;
+    font-size: 7.5pt;
+    color: transparent;
+}
+QProgressBar::chunk {
+    background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
+        stop:0 #3B82F6, stop:0.5 #60A5FA, stop:1 #3B82F6);
+    border-radius: 5px;
+}
+QProgressBar[value="0"]::chunk { opacity: 0; }
+
+/* ── 按钮组卡片容器 ─────────────────────── */
+QFrame#buttonGroupCard {
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+}
+
+/* ── QStatusBar 状态栏 ────────────────────── */
+QStatusBar {
+    background: #FFFFFF;
+    border-top: 1.5px solid #E5E7EB;
+    padding: 5px 12px;
+    font-size: 8.5pt;
+    border-radius: 0 0 10px 10px;
+}
+QStatusBar QLabel { color: #6B7280; }
+QStatusBar QLabel#statusLabel { color: #374151; font-weight: 500; }
+
+/* ── QSplitter 分割器 ────────────────────── */
+QSplitter::handle {
+    background: #E5E7EB;
+    height: 2px;
+}
+QSplitter::handle:hover {
+    background: #3B82F6;
+    height: 3px;
+}
+QSplitter::handle:vertical {
+    background: #E5E7EB;
+    width: 2px;
+}
+QSplitter::handle:vertical:hover {
+    background: #3B82F6;
+    width: 3px;
+}
+
+/* ── QScrollBar 滚动条 ───────────────────── */
+QScrollBar:vertical {
+    background: transparent;
+    width: 10px;
+    margin: 2px;
+    border-radius: 5px;
+}
+QScrollBar::handle:vertical {
+    background: rgba(107,114,128,0.25);
+    border-radius: 5px;
+    min-height: 36px;
+}
+QScrollBar::handle:vertical:hover {
+    background: rgba(107,114,128,0.45);
+}
+QScrollBar::handle:vertical:pressed {
+    background: rgba(59,130,246,0.55);
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
+}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: transparent;
+}
+QScrollBar:horizontal {
+    background: transparent;
+    height: 10px;
+    margin: 2px;
+    border-radius: 5px;
+}
+QScrollBar::handle:horizontal {
+    background: rgba(107,114,128,0.25);
+    border-radius: 5px;
+    min-width: 36px;
+}
+QScrollBar::handle:horizontal:hover {
+    background: rgba(107,114,128,0.45);
+}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0;
+}
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+    background: transparent;
+}
+
+/* ── QFrame / 分隔线 / DialogButtonBox ───── */
+QFrame[frameShape="4"], QFrame[frameShape="5"] { color: #E5E7EB; }
+QDialogButtonBox QPushButton { min-width: 80px; }
+
+/* ── 滚动区域 ────────────────────────────── */
+QScrollArea { border: none; background: transparent; }
+
+/* ── Tab / 菜单 (备用) ────────────────────── */
+QMenu {
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 6px 0;
+}
+QMenu::item {
+    padding: 7px 24px;
+    border-radius: 5px;
+}
+QMenu::item:selected {
+    background: #EFF6FF;
+    color: #1E40AF;
+}
+QMenu::separator {
+    height: 1px;
+    background: #F3F4F6;
+    margin: 4px 12px;
+}
 """
 
 
@@ -299,7 +678,7 @@ class EditTargetDialog(QDialog):
 
         title_lbl = QLabel(vmt_name)
         title_font = QFont()
-        title_font.setPointSize(11)
+        title_font.setPointSize(12)
         title_font.setBold(True)
         title_lbl.setFont(title_font)
         layout.addWidget(title_lbl)
@@ -492,9 +871,9 @@ class PreprocessDialog(QDialog):
     def _highlight_slot_button(self):
         for s, btn in (("base", self._btn_base), ("normal", self._btn_normal)):
             btn.setStyleSheet(
-                "QPushButton { background: #1976D2; color: #FFFFFF; border-radius: 6px; padding: 3px 12px; }"
+                "QPushButton { background: #3B82F6; color: #FFFFFF; border: none; border-radius: 7px; padding: 4px 14px; font-weight: 600; }"
                 if s == self._current_slot else
-                "QPushButton { background: transparent; color: #757575; border: 1px solid #BDBDBD; border-radius: 6px; padding: 3px 12px; }"
+                "QPushButton { background: transparent; color: #9CA3AF; border: 1.5px solid #D1D5DB; border-radius: 7px; padding: 4px 14px; }"
             )
 
     def _sync_slot_ui(self):
@@ -817,11 +1196,11 @@ class CompareDialog(QDialog):
         self._tree.setUpdatesEnabled(False)
         self._tree.setRootIsDecorated(True)
         status_colors = {
-            "未变化": QColor("#22c55e"),
-            "有变动": QColor("#ef4444"),
-            "仅Target有": QColor("#f59e0b"),
-            "仅Original有": QColor("#6366f1"),
-            "(未找到)": QColor("#9E9E9E"),
+            "未变化": QColor("#16A34A"),
+            "有变动": QColor("#DC2626"),
+            "仅Target有": QColor("#F59E0B"),
+            "仅Original有": QColor("#6366F1"),
+            "(未找到)": QColor("#9CA3AF"),
         }
 
         for group_name, items in groups:
@@ -908,7 +1287,7 @@ class ExportNormalDialog(QDialog):
         lbl_vtf.setFixedWidth(140)
         paths_grid.addWidget(lbl_vtf, 2, 0)
         vtf_info = QLabel(str(self._vtfcmd) if self._vtfcmd else "(未配置)")
-        vtf_info.setStyleSheet("color: #9E9E9E;")
+        vtf_info.setStyleSheet("color: #9CA3AF;")
         vtf_info.setWordWrap(True)
         paths_grid.addWidget(vtf_info, 2, 1)
         main_lay.addWidget(paths_grp)
@@ -987,7 +1366,7 @@ class ExportNormalDialog(QDialog):
         log_vlay = QVBoxLayout(log_grp)
         self._log_edit = QTextEdit()
         self._log_edit.setReadOnly(True)
-        self._log_edit.setFont(QFont("Consolas", 9))
+        self._log_edit.setFont(QFont("Consolas", 10))
         self._log_edit.setMaximumHeight(180)
         log_vlay.addWidget(self._log_edit)
         main_lay.addWidget(log_grp)
@@ -1226,8 +1605,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("SP 贴图转 VTF 工具 - made by 一个橘色的橙子")
-        self.setFixedWidth(1304)
-        self.setMinimumHeight(1000)
+        self.setMinimumSize(1120, 820)
+        self.resize(1320, 940)
 
         self.setWindowIcon(QIcon(str(Path(__file__).parent / "tape-x64.png")))
 
@@ -1264,8 +1643,8 @@ class MainWindow(QMainWindow):
         central = QWidget()
         self.setCentralWidget(central)
         main_lay = QVBoxLayout(central)
-        main_lay.setContentsMargins(12, 12, 12, 12)
-        main_lay.setSpacing(8)
+        main_lay.setContentsMargins(16, 16, 16, 12)
+        main_lay.setSpacing(10)
 
         main_lay.addWidget(self._build_paths_group())
         main_lay.addWidget(self._build_settings_group())
@@ -1279,9 +1658,10 @@ class MainWindow(QMainWindow):
         main_lay.addWidget(splitter, 1)
 
         self._status_label = QLabel("就绪 — 填好路径后点击「载入 VMT」")
+        self._status_label.setObjectName("statusLabel")
 
         self._progress_bar = QProgressBar()
-        self._progress_bar.setMaximumWidth(280)
+        self._progress_bar.setMaximumWidth(300)
         self._progress_bar.setVisible(False)
         self._progress_bar.setRange(0, 100)
         self._progress_bar.setValue(0)
@@ -1297,24 +1677,26 @@ class MainWindow(QMainWindow):
         grp = QGroupBox("路径配置")
         grid = QGridLayout(grp)
         grid.setColumnStretch(1, 1)
+        grid.setHorizontalSpacing(10)
+        grid.setVerticalSpacing(8)
 
         for i, (label, key, kind) in enumerate(self.FIELDS):
             lbl = QLabel(label)
-            lbl.setFixedWidth(160)
+            lbl.setFixedWidth(170)
             grid.addWidget(lbl, i, 0)
 
             entry = self._entries[key]
             grid.addWidget(entry, i, 1)
 
             btn = QPushButton("浏览…")
-            btn.setFixedWidth(60)
+            btn.setFixedWidth(64)
             btn.clicked.connect(lambda checked, k=key, t=kind: self._browse(k, t))
             grid.addWidget(btn, i, 2)
 
             ind = QLabel("\u2014")
-            ind.setFixedWidth(24)
+            ind.setFixedWidth(28)
             ind.setAlignment(Qt.AlignCenter)
-            ind.setStyleSheet("color: #9E9E9E;")
+            ind.setStyleSheet("color: #9CA3AF; font-size: 11pt; font-weight: bold;")
             grid.addWidget(ind, i, 3)
             self._indicators[key] = ind
 
@@ -1323,16 +1705,16 @@ class MainWindow(QMainWindow):
     def _build_settings_group(self):
         grp = QGroupBox("输出设置")
         vlay = QVBoxLayout(grp)
-        vlay.setSpacing(4)
+        vlay.setSpacing(6)
 
         row_vtf = QHBoxLayout()
-        row_vtf.setSpacing(4)
+        row_vtf.setSpacing(6)
         row_vtf.addWidget(QLabel("VTFCmd"))
         row_vtf.addWidget(QLabel("版本"))
         self._combo_version = QComboBox()
         self._combo_version.addItems(self.VTF_VERSIONS)
         self._combo_version.setCurrentText("7.2")
-        self._combo_version.setFixedWidth(70)
+        self._combo_version.setFixedWidth(76)
         self._combo_version.setToolTip("VTF 文件版本 · L4D2 推荐 7.2")
         row_vtf.addWidget(self._combo_version)
 
@@ -1340,7 +1722,7 @@ class MainWindow(QMainWindow):
         self._combo_color = QComboBox()
         self._combo_color.addItems(self.VTF_FORMATS)
         self._combo_color.setCurrentText("DXT1")
-        self._combo_color.setFixedWidth(130)
+        self._combo_color.setFixedWidth(140)
         self._combo_color.setToolTip("basetexture 贴图格式\n常用: DXT1 (无Alpha), DXT5 (有Alpha)")
         row_vtf.addWidget(self._combo_color)
         hint_base = QLabel("(basetexture)")
@@ -1351,7 +1733,7 @@ class MainWindow(QMainWindow):
         self._combo_alpha = QComboBox()
         self._combo_alpha.addItems(self.VTF_FORMATS)
         self._combo_alpha.setCurrentText("DXT5")
-        self._combo_alpha.setFixedWidth(130)
+        self._combo_alpha.setFixedWidth(140)
         self._combo_alpha.setToolTip("bumpmap / 法线贴图格式\n常用: DXT5 (推荐), RGBA8888")
         row_vtf.addWidget(self._combo_alpha)
         hint_bump = QLabel("(bumpmap)")
@@ -1367,7 +1749,7 @@ class MainWindow(QMainWindow):
         vlay.addWidget(sep)
 
         row_resize = QHBoxLayout()
-        row_resize.setSpacing(4)
+        row_resize.setSpacing(6)
         row_resize.addWidget(QLabel("缩放"))
 
         self._check_size = QCheckBox("分辨率")
@@ -1380,13 +1762,13 @@ class MainWindow(QMainWindow):
         self._spin_w.setRange(128, 4096)
         self._spin_w.setSingleStep(128)
         self._spin_w.setValue(1024)
-        self._spin_w.setFixedWidth(70)
+        self._spin_w.setFixedWidth(92)
         h_lbl = QLabel("高")
         self._spin_h = QSpinBox()
         self._spin_h.setRange(128, 4096)
         self._spin_h.setSingleStep(128)
         self._spin_h.setValue(1024)
-        self._spin_h.setFixedWidth(70)
+        self._spin_h.setFixedWidth(92)
 
         self._size_children = [w_lbl, self._spin_w, h_lbl, self._spin_h]
 
@@ -1410,14 +1792,14 @@ class MainWindow(QMainWindow):
         self._combo_method = QComboBox()
         self._combo_method.addItems(self.RESIZE_METHODS)
         self._combo_method.setCurrentText("nearest")
-        self._combo_method.setFixedWidth(80)
+        self._combo_method.setFixedWidth(110)
         self._combo_method.setToolTip("等比缩放方式\nnearest=最近邻 biggest/smallest=等比")
 
         f_lbl = QLabel("Filter")
         self._combo_filter = QComboBox()
         self._combo_filter.addItems(self.RESIZE_FILTERS)
         self._combo_filter.setCurrentText("triangle")
-        self._combo_filter.setFixedWidth(90)
+        self._combo_filter.setFixedWidth(120)
         self._combo_filter.setToolTip("图像滤波算法\ntriangle=线性 catrom/mitchell=高质量")
 
         self._resize_children = [m_lbl, self._combo_method, f_lbl, self._combo_filter]
@@ -1432,39 +1814,45 @@ class MainWindow(QMainWindow):
         return grp
 
     def _build_button_bar(self):
-        lay = QHBoxLayout()
-        lay.setSpacing(6)
+        """按钮工具栏：两行布局 — 第一行（主操作 + 选择），第二行（工具）。"""
+        outer = QVBoxLayout()
+        outer.setContentsMargins(0, 4, 0, 4)
+        outer.setSpacing(8)
 
-        op_lbl = QLabel("操作")
-        op_lbl.setObjectName("groupLabel")
-        lay.addWidget(op_lbl)
+        # ════════════ 第一行：主操作 + 选择 ════════════
+        row1 = QHBoxLayout()
+        row1.setSpacing(12)
+
+        # ── 主操作卡片 ─
+        self._btn_grp_op = QFrame()
+        self._btn_grp_op.setObjectName("buttonGroupCard")
+        grp_op = QHBoxLayout(self._btn_grp_op)
+        grp_op.setContentsMargins(8, 6, 8, 6)
+        grp_op.setSpacing(6)
 
         btn_load = QPushButton("载入 VMT")
-        btn_load.setFixedWidth(100)
         btn_load.clicked.connect(self._load_vmts)
-        lay.addWidget(btn_load)
+        grp_op.addWidget(btn_load)
 
         self._btn_run = QPushButton("开始转换")
         self._btn_run.setObjectName("accentButton")
-        self._btn_run.setFixedWidth(105)
         self._btn_run.clicked.connect(self._start_convert)
-        lay.addWidget(self._btn_run)
+        grp_op.addWidget(self._btn_run)
 
-        self._btn_stop = QPushButton("\u25a0 停止")
+        self._btn_stop = QPushButton("停止")
         self._btn_stop.setObjectName("dangerButton")
-        self._btn_stop.setFixedWidth(75)
         self._btn_stop.setEnabled(False)
         self._btn_stop.clicked.connect(self._on_stop)
-        lay.addWidget(self._btn_stop)
+        grp_op.addWidget(self._btn_stop)
 
-        sep1 = QFrame()
-        sep1.setFrameShape(QFrame.VLine)
-        sep1.setFrameShadow(QFrame.Sunken)
-        lay.addWidget(sep1)
+        row1.addWidget(self._btn_grp_op)
 
-        sel_lbl = QLabel("选择")
-        sel_lbl.setObjectName("groupLabel")
-        lay.addWidget(sel_lbl)
+        # ── 选择卡片 ─
+        self._btn_grp_sel = QFrame()
+        self._btn_grp_sel.setObjectName("buttonGroupCard")
+        grp_sel = QHBoxLayout(self._btn_grp_sel)
+        grp_sel.setContentsMargins(8, 6, 8, 6)
+        grp_sel.setSpacing(6)
 
         for label, slot, checked in [
             ("全选 base", "base", True),
@@ -1473,44 +1861,47 @@ class MainWindow(QMainWindow):
             ("全不选 bump", "normal", False),
         ]:
             btn = QPushButton(label)
-            btn.setFixedWidth(105)
             btn.clicked.connect(lambda c, s=slot, ch=checked: self._select_all(s, ch))
-            lay.addWidget(btn)
+            grp_sel.addWidget(btn)
 
-        sep2 = QFrame()
-        sep2.setFrameShape(QFrame.VLine)
-        sep2.setFrameShadow(QFrame.Sunken)
-        lay.addWidget(sep2)
+        row1.addWidget(self._btn_grp_sel)
+        row1.addStretch()
 
-        tool_lbl = QLabel("工具")
-        tool_lbl.setObjectName("groupLabel")
-        lay.addWidget(tool_lbl)
+        outer.addLayout(row1)
 
-        btn_save = QPushButton("保存配置")
-        btn_save.setFixedWidth(95)
-        btn_save.clicked.connect(self._on_save_config)
-        lay.addWidget(btn_save)
+        # ════════════ 第二行：工具 ════════════
+        row2 = QHBoxLayout()
+        row2.setSpacing(12)
 
-        btn_clear = QPushButton("清空日志")
-        btn_clear.setFixedWidth(95)
-        btn_clear.clicked.connect(self._clear_log)
-        lay.addWidget(btn_clear)
+        self._btn_grp_tool = QFrame()
+        self._btn_grp_tool.setObjectName("buttonGroupCard")
+        grp_tool = QHBoxLayout(self._btn_grp_tool)
+        grp_tool.setContentsMargins(8, 6, 8, 6)
+        grp_tool.setSpacing(6)
 
-        btn_preprocess = QPushButton("预处理设置(beta)")
-        btn_preprocess.setFixedWidth(130)
-        btn_preprocess.clicked.connect(self._open_preprocess_dialog)
-        lay.addWidget(btn_preprocess)
+        tool_buttons = [
+            ("保存配置", self._on_save_config),
+            ("清空日志", self._clear_log),
+            ("预处理设置(beta)", self._open_preprocess_dialog),
+            ("对比文件", self._open_compare_dialog),
+            ("导出法线 TGA", self._open_export_normal_dialog),
+            ("VPK 工具", self._open_vpk_tool),
+        ]
+        for text, slot in tool_buttons:
+            btn = QPushButton(text)
+            btn.clicked.connect(slot)
+            grp_tool.addWidget(btn)
 
-        btn_compare = QPushButton("对比文件")
-        btn_compare.setFixedWidth(95)
-        btn_compare.clicked.connect(self._open_compare_dialog)
-        lay.addWidget(btn_compare)
+        row2.addWidget(self._btn_grp_tool)
+        row2.addStretch()
 
-        btn_export_normal = QPushButton("导出法线 TGA")
-        btn_export_normal.setFixedWidth(115)
-        btn_export_normal.clicked.connect(self._open_export_normal_dialog)
-        lay.addWidget(btn_export_normal)
-        return lay
+        outer.addLayout(row2)
+
+        # 清理不再需要的辅助方法
+        if hasattr(type(self), '_btn_group_card'):
+            delattr(type(self), '_btn_group_card')
+
+        return outer
 
     def _build_tree_group(self):
         grp = QGroupBox("VMT 列表")
@@ -1519,13 +1910,13 @@ class MainWindow(QMainWindow):
         self._tree = QTreeWidget()
         self._tree.setColumnCount(5)
         self._tree.setHeaderLabels([
-            "VMT 文件", "basetexture", "basetexture 源 → 目标", "bumpmap", "bumpmap 源 → 目标",
+            "VMT 文件", "basetexture", "basetexture 源 \u2192 目标", "bumpmap", "bumpmap 源 \u2192 目标",
         ])
-        self._tree.setColumnWidth(0, 260)
-        self._tree.setColumnWidth(1, 90)
-        self._tree.setColumnWidth(2, 230)
-        self._tree.setColumnWidth(3, 90)
-        self._tree.setColumnWidth(4, 230)
+        self._tree.setColumnWidth(0, 280)
+        self._tree.setColumnWidth(1, 96)
+        self._tree.setColumnWidth(2, 250)
+        self._tree.setColumnWidth(3, 96)
+        self._tree.setColumnWidth(4, 250)
         self._tree.setAlternatingRowColors(True)
         self._tree.setRootIsDecorated(True)
         self._tree.itemClicked.connect(self._on_tree_clicked)
@@ -1555,7 +1946,7 @@ class MainWindow(QMainWindow):
         self._log_edit = QTextEdit()
         self._log_edit.setObjectName("logEdit")
         self._log_edit.setReadOnly(True)
-        self._log_edit.setFont(QFont("Cascadia Code", 9))
+        self._log_edit.setFont(QFont("Cascadia Code", 10))
         vlay.addWidget(self._log_edit)
         return grp
 
@@ -1581,10 +1972,10 @@ class MainWindow(QMainWindow):
             valid = False
         if valid:
             ind.setText("\u2713")
-            ind.setStyleSheet("color: #22c55e;")
+            ind.setStyleSheet("color: #16A34A; font-size: 11pt; font-weight: bold;")
         else:
             ind.setText("\u2717")
-            ind.setStyleSheet("color: #ef4444;")
+            ind.setStyleSheet("color: #DC2626; font-size: 11pt; font-weight: bold;")
 
     def _auto_detect_vtfcmd(self):
         current = self._entries["vtfcmd"].text().strip()
@@ -2206,21 +2597,21 @@ class MainWindow(QMainWindow):
         cursor.movePosition(QTextCursor.End)
 
         ts_fmt = QTextCharFormat()
-        ts_fmt.setForeground(QColor("#9E9E9E"))
+        ts_fmt.setForeground(QColor("#6B7280"))
         cursor.insertText(f"[{ts}] ", ts_fmt)
 
         msg_fmt = QTextCharFormat()
         if tag == "error":
-            msg_fmt.setForeground(QColor("#ef4444"))
+            msg_fmt.setForeground(QColor("#FCA5A5"))
             msg_fmt.setFontWeight(QFont.Bold)
         elif tag == "warn":
-            msg_fmt.setForeground(QColor("#f59e0b"))
+            msg_fmt.setForeground(QColor("#FBBF24"))
         elif tag == "ok":
-            msg_fmt.setForeground(QColor("#22c55e"))
+            msg_fmt.setForeground(QColor("#6EE7B7"))
         elif tag == "info":
-            msg_fmt.setForeground(QColor("#5b6def"))
+            msg_fmt.setForeground(QColor("#93C5FD"))
         elif tag == "head":
-            msg_fmt.setForeground(QColor("#1e293b"))
+            msg_fmt.setForeground(QColor("#E5E7EB"))
             msg_fmt.setFontWeight(QFont.Bold)
 
         cursor.insertText(msg + "\n", msg_fmt)
@@ -2251,6 +2642,21 @@ class MainWindow(QMainWindow):
         vtf_path = Path(self._entries["vtfcmd"].text().strip())
         dlg = ExportNormalDialog(self, vtf_path)
         dlg.exec()
+
+    def _open_vpk_tool(self):
+        """以子进程方式唤起 VPK 拆装工具（tkinter），避免 Qt/tk 同进程冲突。"""
+        script = APP_DIR / "sp2vtf_vpk_tool.py"
+        if not script.is_file():
+            self._log(f"[错误] 找不到 VPK 工具脚本: {script}")
+            return
+        try:
+            subprocess.Popen(
+                [sys.executable, str(script)],
+                cwd=str(APP_DIR),
+            )
+            self._log("[信息] 已启动 VPK 工具")
+        except OSError as e:
+            self._log(f"[错误] 启动 VPK 工具失败: {e}")
 
     def _clear_log(self):
         self._log_entries.clear()
@@ -2297,10 +2703,10 @@ class ArrowStyle(QProxyStyle):
         rect = self.subControlRect(QStyle.CC_ComboBox, option, QStyle.SC_ComboBoxArrow, widget)
         if rect.isEmpty():
             return
-        color = QColor("#9E9E9E") if option.state & QStyle.State_Enabled else QColor("#E0E0E0")
+        color = QColor("#6B7280") if option.state & QStyle.State_Enabled else QColor("#D1D5DB")
         painter.save()
         painter.translate(rect.center())
-        painter.setPen(QPen(color, 1.2, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+        painter.setPen(QPen(color, 1.3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
         painter.setBrush(Qt.NoBrush)
         painter.setRenderHint(QPainter.Antialiasing)
         painter.drawPath(self._COMBO_PATH)
@@ -2310,7 +2716,7 @@ class ArrowStyle(QProxyStyle):
         rect = option.rect
         if rect.isEmpty():
             return
-        color = QColor("#9E9E9E") if option.state & QStyle.State_Enabled else QColor("#E0E0E0")
+        color = QColor("#6B7280") if option.state & QStyle.State_Enabled else QColor("#D1D5DB")
         path = self._SPIN_UP_PATH if element == QStyle.PE_IndicatorArrowUp else self._SPIN_DOWN_PATH
         painter.save()
         painter.translate(rect.center())
@@ -2324,7 +2730,7 @@ class ArrowStyle(QProxyStyle):
 def main():
     """应用入口：设置主题 → 应用 QSS → 启动主窗口。"""
     app = QApplication(sys.argv)
-    font = QFont("Microsoft YaHei UI", 9)
+    font = QFont("Microsoft YaHei UI", 10)
     app.setFont(font)
     app.setStyle(ArrowStyle("Fusion"))
     app.setStyleSheet(APP_STYLESHEET)
@@ -2335,3 +2741,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
