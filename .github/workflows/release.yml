@@ -1,0 +1,95 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: sp2vtf-tauri/package-lock.json
+
+      - name: Setup Python 3.10
+        id: python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install frontend dependencies
+        working-directory: sp2vtf-tauri
+        run: npm ci
+
+      - name: Cache Rust / Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            sp2vtf-tauri/src-tauri/target
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: tauri-build-${{ runner.os }}-${{ hashFiles('sp2vtf-tauri/src-tauri/Cargo.lock') }}
+          restore-keys: |
+            tauri-build-${{ runner.os }}-
+
+      - name: Build Tauri app (NSIS installer)
+        working-directory: sp2vtf-tauri
+        env:
+          PYO3_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          npm run tauri -- build
+        shell: pwsh
+
+      - name: Create portable zip
+        working-directory: sp2vtf-tauri
+        env:
+          PYO3_PYTHON: ${{ steps.python.outputs.python-path }}
+        shell: pwsh
+        run: |
+          $release = "src-tauri\target\release"
+          $portable = "release-staging"
+          New-Item -ItemType Directory -Path $portable -Force | Out-Null
+          # Executable + runtime DLLs needed beside it
+          Copy-Item "$release\sp2vtf-tauri.exe" $portable -Force
+          foreach ($dll in @("python3.dll","python310.dll","vcruntime140.dll","vcruntime140_1.dll")) {
+            $p = Join-Path $release $dll
+            if (Test-Path $p) { Copy-Item $p $portable -Force }
+          }
+          # Bundled python-embed resources (numpy/PIL/sp2vtf_core)
+          if (Test-Path "$release\resources") { Copy-Item "$release\resources" $portable -Recurse -Force }
+          $version = (Get-Content src-tauri\tauri.conf.json | ConvertFrom-Json).version
+          $zipName = "SP2VTF_${version}_x64-portable.zip"
+          Compress-Archive -Path "$portable\*" -DestinationPath "$zipName" -CompressionLevel Optimal
+          Write-Host "Created $zipName"
+          Write-Host "PORTABLE_ZIP=$zipName"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sp2vtf-dist
+          path: |
+            sp2vtf-tauri/src-tauri/target/release/bundle/nsis/*.exe
+            sp2vtf-tauri/SP2VTF_*_x64-portable.zip
+          if-no-files-found: error
+
+      - name: Upload to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            sp2vtf-tauri/src-tauri/target/release/bundle/nsis/*.exe
+            sp2vtf-tauri/SP2VTF_*_x64-portable.zip
+          generate_release_notes: true
