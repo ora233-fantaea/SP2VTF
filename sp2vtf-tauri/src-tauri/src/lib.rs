@@ -67,9 +67,29 @@ fn export_vtf_to_tga(app: tauri::AppHandle, queue: serde_json::Value, vtfcmd: St
     )
 }
 
+/// 显示 Windows 原生错误对话框（不依赖 GUI 框架）
+fn show_error_dialog(msg: &str) {
+    use std::ptr::null_mut;
+    #[link(name = "user32")]
+    extern "system" {
+        fn MessageBoxW(
+            hWnd: *mut core::ffi::c_void,
+            lpText: *const u16,
+            lpCaption: *const u16,
+            uType: u32,
+        ) -> i32;
+    }
+    let title: Vec<u16> = "SP2VTF - 启动失败\0".encode_utf16().collect();
+    let text: Vec<u16> = msg.encode_utf16().chain(std::iter::once(0)).collect();
+    unsafe {
+        // MB_ICONERROR (0x10) | MB_TOPMOST (0x40000)
+        MessageBoxW(null_mut(), text.as_ptr(), title.as_ptr(), 0x10 | 0x40000);
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let result = tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
@@ -97,6 +117,18 @@ pub fn run() {
             convert_items,
             export_vtf_to_tga,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .run(tauri::generate_context!());
+
+    if let Err(e) = result {
+        let msg = format!(
+            "SP2VTF 启动失败：\n\n\
+             {e}\n\n\
+             ──────────────────────\n\
+             最常见原因：未安装 WebView2 Runtime\n\
+             请下载安装后重试：\n\
+             https://go.microsoft.com/fwlink/p/?LinkId=2124703"
+        );
+        show_error_dialog(&msg);
+        std::process::exit(1);
+    }
 }

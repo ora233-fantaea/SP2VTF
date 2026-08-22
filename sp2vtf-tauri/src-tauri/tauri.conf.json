@@ -35,6 +35,14 @@
     ],
     "resources": [
       "resources/python-embed"
-    ]
+    ],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "embedBootstrapper"
+      },
+      "nsis": {
+        "installMode": "both"
+      }
+    }
   }
 }
