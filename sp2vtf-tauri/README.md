@@ -64,6 +64,11 @@ SP 导出文件名格式：`{VMT文件名}_{贴图类型}.png`，例如 VMT 文�
 | `_Roughness` | `$phongexponenttexture` |
 | `_Metallic` | `$envmapmask` |
 
+## 发布工作流
+
+- 推送 `v*` 标签触发 GitHub Actions 自动构建 NSIS 安装器 + 便携 zip，并上传到对应 GitHub Release。
+- 示例：`git tag v1.0.8 && git push origin v1.0.8`
+
 ## 常见警告（不影响产物）
 
 - Vue/Vuetify CSS 打包时有 `@layer` 语法警告与 chunk >500KB 提示，均为 Vite 层面提示，不影响使用。
