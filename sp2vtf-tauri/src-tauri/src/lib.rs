@@ -1,7 +1,6 @@
 mod python_bridge;
 
 use tauri::Manager;
-use std::path::PathBuf;
 
 #[tauri::command]
 fn py_diag(app: tauri::AppHandle) -> Result<String, String> {
@@ -89,6 +88,31 @@ fn show_error_dialog(msg: &str) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // ── panic 钩子：写文件 + 弹框，确保任何 panic 都有可见错误 ──
+    std::panic::set_hook(Box::new(|info| {
+        let msg = if let Some(s) = info.payload().downcast_ref::<String>() {
+            s.as_str()
+        } else if let Some(s) = info.payload().downcast_ref::<&str>() {
+            *s
+        } else {
+            "未知错误"
+        };
+        let loc = info.location()
+            .map(|l| format!("  位置: {}:{}", l.file(), l.line()))
+            .unwrap_or_default();
+        let backtrace = std::backtrace::Backtrace::force_capture();
+        let log_path = python_bridge::crash_log_path();
+        let full = format!(
+            "SP2VTF 崩溃日志\n{sep}\npanic: {msg}\n{loc}\n\n调用栈:\n{bt}",
+            sep = "=".repeat(40),
+            bt = backtrace,
+        );
+        let _ = std::fs::write(&log_path, &full);
+        show_error_dialog(&format!(
+            "SP2VTF 崩溃：\n\n{msg}\n{loc}\n\n详细日志已写入:\n{log_path}"
+        ));
+    }));
+
     let result = tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
@@ -97,10 +121,15 @@ pub fn run() {
 
             // 在第一次 Python::attach 之前，把 python-embed 加入 PATH，
             // 使 PyO3 raw-dylib 能找到 python310.dll。
-            if let Some(python_dir) = python_bridge::locate_python_dir(&handle) {
-                let current = std::env::var("PATH").unwrap_or_default();
-                std::env::set_var("PATH", format!("{};{}", python_dir.display(), current));
-                eprintln!("[setup] added to PATH: {python_dir:?}");
+            match python_bridge::locate_python_dir(&handle) {
+                Some(python_dir) => {
+                    let current = std::env::var("PATH").unwrap_or_default();
+                    std::env::set_var("PATH", format!("{};{}", python_dir.display(), current));
+                    eprintln!("[setup] added to PATH: {python_dir:?}");
+                }
+                None => {
+                    eprintln!("[setup] 未找到 python-embed 目录（所有回退路径均未命中）");
+                }
             }
 
             if let Err(e) = python_bridge::init_python(&handle) {

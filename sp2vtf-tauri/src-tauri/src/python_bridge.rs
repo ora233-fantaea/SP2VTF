@@ -1,6 +1,8 @@
 //! Python 嵌入桥接：初始化 embeddable Python，配置 sys.path / DLL 目录，
 //! 并封装调用 sp2vtf_core 的函数。
 
+use std::io::Write;
+use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::PathBuf;
 
 use pyo3::prelude::*;
@@ -8,53 +10,121 @@ use pyo3::types::{PyDict, PyTuple};
 use tauri::Manager;
 use tauri::path::BaseDirectory;
 
-/// 定位捆绑的 python-embed 目录（dev: src-tauri/resources，prod: 安装目录 resources）。
+/// 诊断日志写入文件（追加模式）。
+fn diag_log(msg: &str) {
+    let log_path = crash_log_path();
+    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&log_path) {
+        let _ = writeln!(f, "{msg}");
+    }
+}
+
+/// 崩溃日志文件路径。
+pub fn crash_log_path() -> String {
+    if let Ok(temp) = std::env::var("TEMP") {
+        format!("{}\\sp2vtf-crash.log", temp)
+    } else if let Ok(exe) = std::env::current_exe() {
+        exe.parent()
+            .map(|p| p.join("sp2vtf-crash.log").to_string_lossy().to_string())
+            .unwrap_or_else(|| "sp2vtf-crash.log".to_string())
+    } else {
+        "sp2vtf-crash.log".to_string()
+    }
+}
+
+/// 定位捆绑的 python-embed 目录（多级回退）。
 pub fn locate_python_dir(app: &tauri::AppHandle) -> Option<PathBuf> {
+    // 1. 开发环境
     let dev = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("resources")
         .join("python-embed");
     if dev.join("python310._pth").is_file() {
+        diag_log(&format!("[locate] dev 路径命中: {}", dev.display()));
         return Some(dev);
     }
-    if let Ok(r) = app.path().resolve("resources/python-embed", BaseDirectory::Resource) {
-        if r.join("python310._pth").is_file() {
-            return Some(r);
+
+    // 2. exe 同级目录回退
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(dir) = exe.parent() {
+            for sub in ["resources/python-embed", "python-embed"] {
+                let p = dir.join(sub);
+                if p.join("python310._pth").is_file() {
+                    diag_log(&format!("[locate] exe 回退命中: {}", p.display()));
+                    return Some(p);
+                }
+            }
         }
     }
+
+    // 3. Tauri BaseDirectory::Resource 回退
+    for sub in ["resources/python-embed", "python-embed"] {
+        if let Ok(r) = app.path().resolve(sub, BaseDirectory::Resource) {
+            if r.join("python310._pth").is_file() {
+                diag_log(&format!("[locate] Resource 回退命中: {}", r.display()));
+                return Some(r);
+            }
+        }
+    }
+
+    diag_log("[locate] 所有路径均未找到 python-embed");
     None
 }
 
 /// 应用启动时调用：初始化嵌入式 Python，验证 numpy/PIL 可导入。
+/// 用 catch_unwind 包裹 Python::attach，防止 auto-initialize panic 崩溃。
 pub fn init_python(app: &tauri::AppHandle) -> Result<(), String> {
     let python_dir = locate_python_dir(app).ok_or("未找到 python-embed 目录")?;
     let site_packages = python_dir.join("site-packages");
     if !site_packages.is_dir() {
+        diag_log(&format!("[init] site-packages 不存在: {}", site_packages.display()));
         return Err(format!("site-packages 不存在: {}", site_packages.display()));
     }
 
-    Python::attach(|py| -> PyResult<()> {
-        let sys = py.import("sys")?;
-        let path = sys.getattr("path")?;
-        path.call_method1("insert", (0, site_packages.to_string_lossy().as_ref()))?;
-        path.call_method1("insert", (0, python_dir.to_string_lossy().as_ref()))?;
+    let py_dir = python_dir.to_string_lossy().to_string();
+    let sp_dir = site_packages.to_string_lossy().to_string();
 
-        // numpy/Pillow 的原生 DLL 目录
-        let os = py.import("os")?;
-        for sub in ["numpy.libs", "numpy/.libs", "Pillow.libs"] {
-            let d = site_packages.join(sub);
-            if d.is_dir() {
-                let _ = os.call_method1("add_dll_directory", (d.to_string_lossy().as_ref(),));
+    let result = catch_unwind(AssertUnwindSafe(|| {
+        Python::attach(|py| -> PyResult<()> {
+            let sys = py.import("sys")?;
+            let path = sys.getattr("path")?;
+            path.call_method1("insert", (0, sp_dir.as_str()))?;
+            path.call_method1("insert", (0, py_dir.as_str()))?;
+
+            let os = py.import("os")?;
+            for sub in ["numpy.libs", "numpy/.libs", "Pillow.libs"] {
+                let d = PathBuf::from(&sp_dir).join(sub);
+                if d.is_dir() {
+                    let _ = os.call_method1("add_dll_directory", (d.to_string_lossy().as_ref(),));
+                }
             }
-        }
 
-        let np = py.import("numpy")?;
-        let pil = py.import("PIL")?;
-        let np_ver: String = np.getattr("__version__")?.extract()?;
-        let pil_ver: String = pil.getattr("__version__")?.extract()?;
-        eprintln!("[python] numpy {np_ver}, Pillow {pil_ver}, embed={}", python_dir.display());
-        Ok(())
-    })
-    .map_err(|e: PyErr| format!("Python 初始化失败: {e}"))
+            let np = py.import("numpy")?;
+            let pil = py.import("PIL")?;
+            let np_ver: String = np.getattr("__version__")?.extract()?;
+            let pil_ver: String = pil.getattr("__version__")?.extract()?;
+            eprintln!("[python] numpy {np_ver}, Pillow {pil_ver}, embed={py_dir}");
+            diag_log(&format!("[init] 成功: numpy {np_ver}, Pillow {pil_ver}, embed={py_dir}"));
+            Ok(())
+        })
+    }));
+
+    match result {
+        Ok(Ok(())) => Ok(()),
+        Ok(Err(py_err)) => {
+            diag_log(&format!("[init] Python 错误: {py_err}"));
+            Err(format!("Python 初始化失败: {py_err}"))
+        }
+        Err(panic_err) => {
+            let msg = if let Some(s) = panic_err.downcast_ref::<String>() {
+                s.clone()
+            } else if let Some(s) = panic_err.downcast_ref::<&str>() {
+                s.to_string()
+            } else {
+                format!("{:?}", panic_err)
+            };
+            diag_log(&format!("[init] PANIC: {msg}"));
+            Err(format!("Python 初始化 panic: {msg}"))
+        }
+    }
 }
 
 /// 将 serde 值转换为 Python 对象（通过 json 中间层，保证类型安全）。
